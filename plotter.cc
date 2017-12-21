@@ -65,7 +65,8 @@ void draw_coords (const Point2d& p, ALLEGRO_FONT *font) {
     int text_height = al_get_font_line_height (font), offset = text_height / 2;
     al_draw_textf (font, col,
             p.x + offset, p.y - text_height, ALLEGRO_ALIGN_LEFT,
-            "%d,%d", static_cast< int >(p.x), static_cast< int >(p.y));
+            "%d,%d", static_cast< int >(p.x), 
+            static_cast< int >(fabs(p.y - DEFAULT_HEIGHT)));
 }
 
 void draw_labels (const Point2d& o, 
