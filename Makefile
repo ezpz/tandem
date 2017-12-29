@@ -12,7 +12,9 @@ LIBS = $(BASE_LIBS) $(ALLEGRO_LIBS)
 
 INC = -I./include
 
-SRCS = plotter.cc
+SRCS = src/plot.cc \
+	   src/plot_util.cc \
+	   plotter.cc
 
 plot: 
 	g++ $(FLAGS) $(INC) $(SRCS) $(LIBS) -o plot
