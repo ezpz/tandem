@@ -109,7 +109,7 @@ void PlotArea::DrawAllPoints () const {
     std::vector< PointData >::const_iterator PIT = points_.begin (),
         PEND = points_.end ();
     for (; PIT != PEND; ++PIT) {
-        al_draw_filled_circle (PIT->p.X (), Height () - PIT->p.Y (),
+        al_draw_filled_circle (PIT->np.X (), Height () - PIT->np.Y (),
                 1.0 * PIT->opt.cex, PIT->opt.col);
     }
 }

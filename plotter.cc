@@ -177,8 +177,12 @@ int main () {
     font = al_load_font ("fonts/FreeMono.ttf", 8, 0);
     if (NULL == font) { assert (0); }
 
+    Options o = Options::Defaults ();
+    o.col = mkcol (200, 180, 20, 100);
+    o.cex = 2.5;
     for (int i = 0; i < screen_x; ++i) {
-        plot_top.DrawPoint (Point (i, screen_y / 2));
+        float y = (screen_y / 2 ) + sinf (i * 0.0174) * (screen_y / 2);
+        plot_top.DrawPoint (Point (i, y), o);
     }
 
     while (true) {
@@ -208,6 +212,11 @@ int main () {
                     }
                 }
                 break;
+            case ALLEGRO_EVENT_KEY_DOWN:
+                if (ALLEGRO_KEY_ESCAPE == event.keyboard.keycode) {
+                    goto outly;
+                }
+                break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
                 goto outly;
                 break;
@@ -222,6 +231,8 @@ int main () {
     }
 
 outly:
+
+    /* TODO: Display cleanup etrc. */
     return 0;
 }
 
