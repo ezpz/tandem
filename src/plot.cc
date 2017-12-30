@@ -177,9 +177,20 @@ void PlotArea::Box () { Box (opt_); }
 
 void PlotArea::Box (const Options &o) {
     GrabFocus ();
-    al_draw_rectangle (border_.left, Height () -  border_.bottom,
-            Width () - border_.right, border_.top, 
-            o.col, o.lwd);
+    /* TODO:
+     * In order to get this to persist without having to call it each refresh
+     * (which would require caching the fact that a border is requested)
+     * we draw it by individual lines instead of directly calling the 
+     * drawing primitives
+     */
+    Point bl (0, 0), 
+          tl (0, Height ()), 
+          tr (Width (), Height ()), 
+          br (Width (), 0);
+    DrawLine (bl, tl, o);
+    DrawLine (tl, tr, o);
+    DrawLine (tr, br, o);
+    DrawLine (br, bl, o);
 }
 
 void PlotArea::Grid () { Grid (opt_); }

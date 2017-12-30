@@ -191,6 +191,14 @@ int main () {
             Point (2 * screen_x, screen_y / 4));
     plot_top.DrawLine (l, o);
 
+    o = Options::Defaults ();
+    o.lwd = 0.0;
+    o.col = mkcol (233, 233, 233, 200);
+    plot_top.Grid (o);
+
+    o.lwd = 2;
+    plot_top.Box (o);
+
     while (true) {
 
         ALLEGRO_EVENT event;
@@ -231,8 +239,6 @@ int main () {
                 break;
         }
 
-        plot_top.Box ();
-        plot_top.Grid ();
         plot_top.Update ();
     }
 
