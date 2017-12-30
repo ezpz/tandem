@@ -1,4 +1,7 @@
 
+#include <cmath>
+#include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <algorithm>
 #include "plot.h"
@@ -124,6 +127,16 @@ void PlotArea::DrawAllLines () const {
     }
 }
 
+void PlotArea::DrawAllText () const {
+    std::vector< TextData >::const_iterator IT = strings_.begin (),
+        END = strings_.end ();
+    for (; IT != END; ++IT) {
+        al_draw_text (IT->opt.font, IT->opt.col,
+                IT->np.X (), Height () - IT->np.Y (),
+                IT->opt.align, IT->txt.c_str ());
+    }
+}
+
 void PlotArea::DrawPoint (const Point &p) { DrawPoint (p, opt_); }
 
 void PlotArea::DrawPoint (const Point &p, const Options &o) {
@@ -198,10 +211,10 @@ void PlotArea::Grid () { Grid (opt_); }
 void PlotArea::Grid (const Options &o) {
     float xlow = opt_.xlim.low, 
           xhigh = opt_.xlim.high,
-          xdelta = opt_.xlim.Delta () / 7.0,
+          xdelta = opt_.xlim.Delta () / opt_.xticks,
           ylow = opt_.ylim.low,
           yhigh = opt_.ylim.high,
-          ydelta = opt_.ylim.Delta () / 7.0;
+          ydelta = opt_.ylim.Delta () / opt_.yticks;
     for (float x = xlow; x <= xhigh; x += xdelta) {
         Point a(x, ylow), b(x, yhigh);
         DrawLine (a, b, o);
@@ -212,6 +225,66 @@ void PlotArea::Grid (const Options &o) {
     }
 }
 
+void PlotArea::DrawText (const Point &p, const std::string &txt) {
+    DrawText (p, txt, opt_);
+}
+
+void PlotArea::DrawText (const Point &p, const std::string &txt,
+        const Options &o) {
+
+    Point np = Normalize (p);
+    TextData td (p, np, o, txt);
+    strings_.push_back (td);
+
+    al_draw_text (o.font, o.col, np.X (), Height () - np.Y (), 
+            o.align, txt.c_str ());
+}
+
+void PlotArea::Axis (int which) { Axis (which, opt_); }
+
+void PlotArea::Axis (int which, const Options &o) {
+    float x = 0.0, y = 0.0, off = opt_.font_px / 2.0, delta = 0.0;
+    float txt_h = opt_.font_px;
+    char txt[255] = {0};
+    switch (which) {
+        case 1: /* bottom */
+            delta = opt_.xlim.Delta () / opt_.xticks;
+            for (x = delta; x < opt_.xlim.high; x += delta) {
+                DrawLine (Point (x, 0), Point (x, off), o);
+                snprintf (txt, sizeof (txt), "%d", 
+                        static_cast< int >(roundf (x)));
+                DrawText (Point (border_.left + x, border_.bottom - txt_h), 
+                        std::string (txt), o);
+            }
+            break;
+        case 2: /* left */
+            delta = opt_.ylim.Delta () / opt_.yticks;
+            for (y = delta; y < opt_.ylim.high; y += delta) {
+                DrawLine (Point (0, y), Point (off, y), o);
+                snprintf (txt, sizeof (txt), "%d", 
+                        static_cast< int >(roundf (y)));
+                DrawText (
+                        Point (border_.left - txt_h, 
+                            border_.bottom + y + txt_h), 
+                        std::string (txt), o);
+            }
+            break;
+        case 3: /* top */
+            delta = opt_.xlim.Delta () / opt_.xticks;
+            for (x = delta; x < opt_.xlim.high; x += delta) {
+                DrawLine (Point (x, Height ()), Point (x, Height () - off), o);
+            }
+            break;
+        case 4: /* right */
+            delta = opt_.ylim.Delta () / opt_.yticks;
+            for (y = delta; y < opt_.ylim.high; y += delta) {
+                DrawLine (Point (Width (), y), Point (Width () - off, y), o);
+            }
+            break;
+        default:
+            break;
+    }
+}
 
 //void PlotArea::DrawRectangle (const Point &ll, const Point &ur);
 //void PlotArea::DrawRectangle (const Point &ll, const Point &ur, const Options &o);

@@ -1,9 +1,14 @@
 #ifndef PLOT_UTIL_H__
 #define PLOT_UTIL_H__
 
+#include <string>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_ttf.h>
+
+#define ALIGN_LEFT ALLEGRO_ALIGN_LEFT
+#define ALIGN_CENTER ALLEGRO_ALIGN_CENTER
+#define ALIGN_RIGHT ALLEGRO_ALIGN_RIGHT
 
 /*
  * Absolute range of an axis
@@ -28,6 +33,9 @@ struct Options {
     float               cex;        /* expansion factor for points/text */
     ALLEGRO_FONT        *font;      /* default font */
     float               font_px;    /* height of font in px */
+    int                 xticks;     /* number of tick marks on x axis */
+    int                 yticks;     /* number of tick marks on y axis */
+    int                 align;      /* text alignment */
 
     Margin              oma;        /* outer margins */
     Range               xlim, ylim; /* plot region bounds */
@@ -119,6 +127,21 @@ struct LineData {
 private:
 
     LineData ();
+};
+
+struct TextData {
+    std::string txt;/* text to display */
+    Point p;        /* absolute point where text goes */
+    Point np;       /* normalized location to place text */
+    /* TODO: too heavy to store with every single item... */
+    Options opt;/* Options used to draw text */
+
+    TextData (const Point& pp, const Point& npp, const Options& o, 
+            const std::string& str) : txt(str), p(pp), np(npp), opt(o) {}
+
+private:
+
+    TextData ();
 };
 
 ALLEGRO_COLOR mkcol (int r, int g, int b, int a);

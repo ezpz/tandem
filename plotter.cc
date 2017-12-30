@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <ctime>
+#include <string>
 #include <algorithm>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
@@ -181,7 +182,7 @@ int main () {
     Options o = Options::Defaults ();
     o.col = mkcol (200, 180, 20, 100);
     o.cex = 2.5;
-    for (int i = 0; i < screen_x; ++i) {
+    for (int i = 0; i < screen_x; i += 5) {
         float y = (screen_y / 2 ) + sinf (i * 0.0174) * (screen_y / 2);
         plot_top.DrawPoint (Point (i, y), o);
     }
@@ -189,6 +190,7 @@ int main () {
     /* Test line clipping */
     Line l(Point (-30, 3 * (screen_y / 4.0)), 
             Point (2 * screen_x, screen_y / 4));
+    o.lwd = 3.0;
     plot_top.DrawLine (l, o);
 
     o = Options::Defaults ();
@@ -196,8 +198,16 @@ int main () {
     o.col = mkcol (233, 233, 233, 200);
     plot_top.Grid (o);
 
-    o.lwd = 2;
+    o.lwd = 1.0;
     plot_top.Box (o);
+
+    o.lwd = 3.0;
+    o.col = mkcol (20, 80, 255, 200);
+    o.align = ALIGN_CENTER;
+    plot_top.Axis (1, o);
+    o.align = ALIGN_RIGHT;
+    plot_top.Axis (2, o);
+
 
     while (true) {
 
@@ -211,8 +221,6 @@ int main () {
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
                 cursor.X (event.mouse.x);
                 cursor.Y (screen_y - event.mouse.y);
-                plot_top.DrawPoint (cursor);
-                plot_top.DrawLine (cursor, Point (screen_x, screen_y));
                 break;
             case ALLEGRO_EVENT_MOUSE_AXES:
                 cursor.X (event.mouse.x);

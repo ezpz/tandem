@@ -1,6 +1,7 @@
 #ifndef PLOT_H__
 #define PLOT_H__
 
+#include <string>
 #include <vector>
 #include "plot_util.h"
 
@@ -16,12 +17,14 @@ class PlotArea {
 
     std::vector< PointData > points_;
     std::vector< LineData > lines_;
+    std::vector< TextData > strings_;
 
     float Width () const { return width_; }
     float Height () const { return height_; }
 
     void DrawAllPoints () const;
     void DrawAllLines () const;
+    void DrawAllText () const;
 
     /*
      * Clip line to plot area 
@@ -77,6 +80,7 @@ public:
         GrabFocus ();
         DrawAllPoints ();
         DrawAllLines ();
+        DrawAllText ();
         al_flip_display ();
     }
 
@@ -104,6 +108,12 @@ public:
     void DrawRectangle (const Point &ll, const Point &ur, const Options &o);
 
     /*
+     * Draw a string on the plot
+     */
+    void DrawText (const Point &p, const std::string &txt);
+    void DrawText (const Point &p, const std::string &txt, const Options &o);
+
+    /*
      * Draw a box defining the plot area
      */
     void Box ();
@@ -115,6 +125,15 @@ public:
     void Grid ();
     void Grid (const Options &o);
 
+    /*
+     * Place axis ticks/labels on the selected axis
+     * 1 - bottom
+     * 2 - left
+     * 3 - top
+     * 4 - right
+     */
+    void Axis (int which);
+    void Axis (int which, const Options &o);
 };
 
 #endif /*PLOT_H__*/

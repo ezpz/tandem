@@ -9,15 +9,20 @@ void Options::Reset () {
     lwd = 1.0;
     cex = 1.0;
 
-    oma.bottom = 12.0;
-    oma.left = 12.0;
-    oma.top = 13.0;
-    oma.right = 11.0;
+    oma.bottom = 3.0;
+    oma.left = 5.0;
+    oma.top = 7.0;
+    oma.right = 2.0;
 
     xlim.low = 0.0;
     xlim.high = 1.0;
     ylim.low = 0.0;
     ylim.high = 1.0;
+
+    xticks = 7;
+    yticks = 5;
+
+    align = ALIGN_CENTER;
 
     col = mkcol (50, 50, 255, 255);
     font_px = al_get_font_line_height (font);
