@@ -177,6 +177,7 @@ int main () {
     font = al_load_font ("fonts/FreeMono.ttf", 8, 0);
     if (NULL == font) { assert (0); }
 
+    /* Test points to specific plot */
     Options o = Options::Defaults ();
     o.col = mkcol (200, 180, 20, 100);
     o.cex = 2.5;
@@ -184,6 +185,11 @@ int main () {
         float y = (screen_y / 2 ) + sinf (i * 0.0174) * (screen_y / 2);
         plot_top.DrawPoint (Point (i, y), o);
     }
+
+    /* Test line clipping */
+    Line l(Point (-30, 3 * (screen_y / 4.0)), 
+            Point (2 * screen_x, screen_y / 4));
+    plot_top.DrawLine (l, o);
 
     while (true) {
 

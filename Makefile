@@ -1,5 +1,5 @@
 
-ALL = plot
+ALL = plot refs
 
 default: plot
 
@@ -16,7 +16,10 @@ SRCS = src/plot.cc \
 	   src/plot_util.cc \
 	   plotter.cc
 
-plot: 
+refs:
+	cscope -b -q -R src/* include/* plotter.cc
+
+plot: refs
 	g++ $(FLAGS) $(INC) $(SRCS) $(LIBS) -o plot
 
 clean:
