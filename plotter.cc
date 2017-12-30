@@ -13,85 +13,9 @@
 #include "plot_util.h"
 #include "plot.h"
 
-static int DEFAULT_WIDTH = 0;
-static int DEFAULT_HEIGHT = 0;
-
-void draw_border (ALLEGRO_DISPLAY *scr, int w, int h, ALLEGRO_COLOR col) {
-    al_set_target_bitmap (al_get_backbuffer (scr));
-    int off = 2; 
-    float lwd = 2.0;
-    al_draw_rectangle (off, off, w - off, h - off, col, lwd);
-}
-
-int draw_crosshair (const Point& c, 
-        const Point& o, const Point& xmax, const Point& ymax) {
-    ALLEGRO_COLOR col = mkcol (36, 255, 36, 120);
-    int in_cnt = 0;
-    if (c.X () >= o.X () && c.X () <= xmax.X ()) {
-        /* draw vertical line */
-        ++in_cnt;
-        al_draw_line(c.X (), o.Y (), c.X (), ymax.Y (), col, 1);
-    }
-    if (c.Y () <= o.Y () && c.Y () >= ymax.Y ()) {
-        /* draw horizontal line */
-        ++in_cnt;
-        al_draw_line(o.X (), c.Y (), xmax.X (), c.Y (), col, 1);
-    }
-    return in_cnt;
-}
-
-void draw_coords (const Point& p, ALLEGRO_FONT *font) {
-    ALLEGRO_COLOR col = mkcol (200, 200, 32, 200);
-    int text_height = al_get_font_line_height (font), offset = text_height / 2;
-    al_draw_textf (font, col,
-            p.X () + offset, p.Y () - text_height, ALLEGRO_ALIGN_LEFT,
-            "%d,%d", static_cast< int >(p.X ()), 
-            static_cast< int >(fabs(p.Y () - DEFAULT_HEIGHT)));
-}
-
-void draw_labels (const Point& o, 
-        const Point& x, const Point& y, ALLEGRO_FONT *font) {
-    ALLEGRO_COLOR col = mkcol (200, 200, 200, 128);
-    const int n = 10;
-    int text_height = al_get_font_line_height (font);
-    double xstep = (x.X () - o.X ()) / n;
-    double ystep = (o.Y () - y.Y ()) / n;
-    for (double d = o.X () + xstep; d <= x.X (); d += xstep) {
-        al_draw_textf (font, col, 
-                d, o.Y () + text_height, ALLEGRO_ALIGN_CENTER, 
-                "%d", static_cast< int >(floor (d)));
-    }
-    for (double d = o.Y () - ystep, l = y.Y () + ystep; 
-            d >= y.Y (); d -= ystep, l += ystep) {
-        al_draw_textf (font, col, 
-                o.X () - text_height, d - text_height / 2, ALLEGRO_ALIGN_RIGHT, 
-                "%d", static_cast< int >(floor (l)));
-    }
-}
-
-void draw_axes (const Point& o, const Point& x, const Point& y) {
-    ALLEGRO_COLOR col = mkcol (36, 36, 255, 120);
-    al_draw_line(o.X (), o.Y (), o.X (), y.Y (), col, 3);
-    al_draw_line(o.X (), o.Y (), x.X (), o.Y (), col, 3);
-}
-
-void draw_grid (const Point& o, const Point& x, const Point& y) {
-    ALLEGRO_COLOR col = mkcol (200, 200, 200, 32);
-    const int n = 10;
-    double xstep = (x.X () - o.X ()) / n;
-    double ystep = (o.Y () - y.Y ()) / n;
-    for (double d = o.X (); d <= x.X (); d += xstep) {
-        al_draw_line (d, o.Y (), d, y.Y (), col, 0);
-    }
-    for (double d = o.Y (); d >= y.Y (); d -= ystep) {
-        al_draw_line (o.X (), d, x.X (), d, col, 0);
-    }
-}
-
 int main () {
     ALLEGRO_EVENT_QUEUE *events = NULL;
     ALLEGRO_DISPLAY *screens[3] = { NULL };
-    ALLEGRO_FONT *font = NULL;
 
     int adapter_count = 0;
     int monitor_x = 0, monitor_y = 0, screen_x = 0, screen_y = 0;
@@ -115,9 +39,6 @@ int main () {
             screen_y = (monitor_y / 2) * 0.95;
         }
     }
-
-    DEFAULT_WIDTH = screen_x;
-    DEFAULT_HEIGHT = screen_y;
 
     double origin_x = screen_x / 4.0;
     double origin_y = screen_y - screen_y / 4.0;
@@ -161,6 +82,8 @@ int main () {
 
     plot_top.SetXlim (xlim);
     plot_top.SetYlim (ylim);
+    plot_bottom.SetXlim (xlim);
+    plot_bottom.SetYlim (ylim);
 
     events = al_create_event_queue ();
     if (NULL == events) {
@@ -175,9 +98,6 @@ int main () {
     al_register_event_source (events, al_get_keyboard_event_source ());
     al_register_event_source (events, al_get_mouse_event_source ());
 
-    font = al_load_font ("fonts/FreeMono.ttf", 8, 0);
-    if (NULL == font) { assert (0); }
-
     /* Test points to specific plot */
     Options o = Options::Defaults ();
     o.col = mkcol (200, 180, 20, 100);
@@ -185,6 +105,7 @@ int main () {
     for (int i = 0; i < screen_x; i += 5) {
         float y = (screen_y / 2 ) + sinf (i * 0.0174) * (screen_y / 2);
         plot_top.DrawPoint (Point (i, y), o);
+        plot_bottom.DrawPoint (Point (i, y), o);
     }
 
     /* Test line clipping */
@@ -192,21 +113,26 @@ int main () {
             Point (2 * screen_x, screen_y / 4));
     o.lwd = 3.0;
     plot_top.DrawLine (l, o);
+    plot_bottom.DrawLine (l, o);
 
     o = Options::Defaults ();
     o.lwd = 0.0;
-    o.col = mkcol (233, 233, 233, 200);
+    o.col = mkcol (233, 233, 233, 20);
     plot_top.Grid (o);
+    plot_bottom.Grid (o);
 
     o.lwd = 1.0;
     plot_top.Box (o);
+    plot_bottom.Box (o);
 
     o.lwd = 3.0;
     o.col = mkcol (20, 80, 255, 200);
     o.align = ALIGN_CENTER;
     plot_top.Axis (1, o);
+    plot_bottom.Axis (1, o);
     o.align = ALIGN_RIGHT;
     plot_top.Axis (2, o);
+    plot_bottom.Axis (2, o);
 
 
     while (true) {
@@ -216,6 +142,7 @@ int main () {
 
         /* Not the best place to have this */
         plot_top.Clear ();
+        plot_bottom.Clear ();
 
         switch (event.type) {
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
@@ -248,6 +175,7 @@ int main () {
         }
 
         plot_top.Update ();
+        plot_bottom.Update ();
     }
 
 outly:
