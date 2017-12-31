@@ -196,10 +196,10 @@ void PlotArea::Box (const Options &o) {
      * we draw it by individual lines instead of directly calling the 
      * drawing primitives
      */
-    Point bl (0, 0), 
-          tl (0, Height ()), 
-          tr (Width (), Height ()), 
-          br (Width (), 0);
+    Point bl (opt_.xlim.low, opt_.ylim.low), 
+          tl (opt_.xlim.low, opt_.ylim.high), 
+          tr (opt_.xlim.high, opt_.ylim.high), 
+          br (opt_.xlim.high, opt_.ylim.low);
     DrawLine (bl, tl, o);
     DrawLine (tl, tr, o);
     DrawLine (tr, br, o);
