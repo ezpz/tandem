@@ -40,15 +40,7 @@ int main () {
         }
     }
 
-    double origin_x = screen_x / 4.0;
-    double origin_y = screen_y - screen_y / 4.0;
-    double yaxis_max = origin_y - screen_y / 2.0;
-    double xaxis_max = origin_x + screen_x / 2.0;
-
-    Point cursor (0, 0), 
-          origin (origin_x, origin_y), 
-          xmax (xaxis_max, origin_y), 
-          ymax (origin_x, yaxis_max);
+    Point cursor (0, 0);
 
     al_set_new_display_flags (ALLEGRO_NOFRAME);
 
