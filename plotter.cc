@@ -13,12 +13,26 @@
 #include "plot_util.h"
 #include "plot.h"
 
+void load (const char *csv, std::vector< Point > &pts) {
+    FILE *fin = fopen (csv, "rb");
+    if (NULL == fin) { return; }
+    while (! ferror (fin) && ! feof (fin)) {
+        int x = 0, y = 0;
+        if (2 != fscanf (fin, "%d,%d", &x, &y)) {
+            return;
+        }
+        pts.push_back (Point (x,y));
+        if (feof (fin)) { break; }
+    }
+}
+
 int main () {
     ALLEGRO_EVENT_QUEUE *events = NULL;
     ALLEGRO_DISPLAY *screens[3] = { NULL };
 
     int adapter_count = 0;
     int monitor_x = 0, monitor_y = 0, screen_x = 0, screen_y = 0;
+    float minx = 0, miny = 0, maxx = 0, maxy = 0;
 
     srand (time (NULL));
 
@@ -70,7 +84,20 @@ int main () {
              plot_bottom(screens[2]), 
              plot_both(screens[1]);
 
-    Range xlim (0, screen_x), ylim (0, screen_y);
+    std::vector< Point > xs;
+    load ("data/test.csv", xs);
+
+    std::vector< Point >::iterator PIT = xs.begin (), PEND = xs.end ();
+    minx = maxx = PIT->X ();
+    miny = maxy = PIT->Y ();
+    for (; PIT != PEND; ++PIT) {
+        if (PIT->X () < minx) { minx = PIT->X (); }
+        if (PIT->Y () < miny) { miny = PIT->Y (); }
+        if (PIT->X () > maxx) { maxx = PIT->X (); }
+        if (PIT->Y () > maxy) { maxy = PIT->Y (); }
+    }
+
+    Range xlim (minx, maxx), ylim (miny, maxy);
 
     plot_top.SetXlim (xlim);
     plot_top.SetYlim (ylim);
@@ -90,42 +117,24 @@ int main () {
     al_register_event_source (events, al_get_keyboard_event_source ());
     al_register_event_source (events, al_get_mouse_event_source ());
 
-    /* Test points to specific plot */
     Options o = Options::Defaults ();
-    o.col = mkcol (200, 180, 20, 100);
-    o.cex = 2.5;
-    for (int i = 0; i < screen_x; i += 5) {
-        float y = (screen_y / 2 ) + sinf (i * 0.0174) * (screen_y / 2);
-        plot_top.DrawPoint (Point (i, y), o);
-        plot_bottom.DrawPoint (Point (i, y), o);
-    }
 
-    /* Test line clipping */
-    Line l(Point (-30, 3 * (screen_y / 4.0)), 
-            Point (2 * screen_x, screen_y / 4));
-    o.lwd = 3.0;
-    plot_top.DrawLine (l, o);
-    plot_bottom.DrawLine (l, o);
-
-    o = Options::Defaults ();
     o.lwd = 0.0;
     o.col = mkcol (233, 233, 233, 20);
     plot_top.Grid (o);
     plot_bottom.Grid (o);
 
-    o.lwd = 1.0;
+    o.lwd = 2.5;
     plot_top.Box (o);
     plot_bottom.Box (o);
 
-    o.lwd = 3.0;
-    o.col = mkcol (20, 80, 255, 200);
-    o.align = ALIGN_CENTER;
-    plot_top.Axis (1, o);
-    plot_bottom.Axis (1, o);
-    o.align = ALIGN_RIGHT;
-    plot_top.Axis (2, o);
-    plot_bottom.Axis (2, o);
-
+    o = Options::Defaults ();
+    o.cex = 2.5;
+    PIT = xs.begin (), PEND = xs.end ();
+    for (; PIT != PEND; ++PIT) {
+        plot_top.DrawPoint (*PIT, o);
+        plot_bottom.DrawPoint (*PIT, o);
+    }
 
     while (true) {
 
