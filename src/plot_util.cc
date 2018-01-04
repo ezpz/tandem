@@ -25,6 +25,8 @@ void Options::Reset () {
     align = ALIGN_CENTER;
 
     col = mkcol (50, 50, 255, 255);
+    fill = mkcol (50, 50, 255, 50);
+    sfill = mkcol (50, 220, 50, 50);
     font_px = al_get_font_line_height (font);
 }
 

@@ -12,19 +12,19 @@ class PlotArea {
     Border border_;
 
     Range xlim, ylim;
+    Point sp1_, sp2_;
 
+    bool selection_; /* is there currently a focused selection */
     float width_, height_;
 
     std::vector< PointData > points_;
     std::vector< LineData > lines_;
     std::vector< TextData > strings_;
 
-    float Width () const { return width_; }
-    float Height () const { return height_; }
-
     void DrawAllPoints () const;
     void DrawAllLines () const;
     void DrawAllText () const;
+    void DrawAllRectangles () const;
 
     /*
      * Clip line to plot area 
@@ -32,6 +32,9 @@ class PlotArea {
     Line ClipLine (const Line &line);
 
     bool Contains (const Point &p) const;
+
+    inline float Width () const { return width_; }
+    inline float Height () const { return height_; }
 
     /*
      * Ploat area is normalized to [0.0,1.0], this converts a point or line
@@ -81,6 +84,7 @@ public:
         DrawAllPoints ();
         DrawAllLines ();
         DrawAllText ();
+        DrawAllRectangles ();
         al_flip_display ();
     }
 
@@ -104,8 +108,8 @@ public:
     /*
      * Draw a bounding box within the plot window
      */
-    void DrawRectangle (const Point &ll, const Point &ur);
-    void DrawRectangle (const Point &ll, const Point &ur, const Options &o);
+    void DrawSelection (const Point &ll, const Point &ur);
+    void ClearSelection ();
 
     /*
      * Draw a string on the plot
@@ -134,6 +138,30 @@ public:
      */
     void Axis (int which);
     void Axis (int which, const Options &o);
+
+    /*
+     * Return a point in Window space of the plot origin
+     */
+    inline Point GetWindowOrigin () const {
+        return Point (border_.left, Height () - border_.bottom);
+    }
+
+    /*
+     * Get size in pixels of plot area height in window space
+     */
+    inline float GetWindowPlotHeight () const {
+        return (Height () - (border_.bottom + border_.top));
+    }
+
+    /*
+     * Get size in pixels of plot area width in window space
+     */
+    inline float GetWindowPlotWidth () const {
+        return (Width () - (border_.left + border_.right));
+    }
+
 };
+
+bool point_in_plot (const PlotArea &plot, const Point &p);
 
 #endif /*PLOT_H__*/

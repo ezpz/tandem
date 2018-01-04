@@ -13,6 +13,11 @@
 #include "plot_util.h"
 #include "plot.h"
 
+enum button_state {
+    BUTTON_DOWN = 0,
+    BUTTON_UP
+};
+
 void load (const char *csv, std::vector< Point > &pts) {
     FILE *fin = fopen (csv, "rb");
     if (NULL == fin) { return; }
@@ -33,6 +38,7 @@ int main () {
     int adapter_count = 0;
     int monitor_x = 0, monitor_y = 0, screen_x = 0, screen_y = 0;
     float minx = 0, miny = 0, maxx = 0, maxy = 0;
+    button_state bstate = BUTTON_UP;
 
     srand (time (NULL));
 
@@ -54,7 +60,7 @@ int main () {
         }
     }
 
-    Point cursor (0, 0);
+    Point cursor (0, 0), orig_cursor = cursor;
 
     al_set_new_display_flags (ALLEGRO_NOFRAME);
 
@@ -145,20 +151,35 @@ int main () {
         plot_top.Clear ();
         plot_bottom.Clear ();
 
+next_event:
         switch (event.type) {
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
                 cursor.X (event.mouse.x);
-                cursor.Y (screen_y - event.mouse.y);
+                cursor.Y (event.mouse.y);
+                if (point_in_plot (plot_top, cursor)) {
+                    orig_cursor = cursor;
+                    plot_top.DrawSelection (orig_cursor, cursor);
+                    bstate = BUTTON_DOWN;
+                }
+                break;
+            case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
+                cursor.X (event.mouse.x);
+                cursor.Y (event.mouse.y);
+                if (point_in_plot (plot_top, cursor)) {
+                    if (BUTTON_DOWN == bstate) {
+                        plot_top.DrawSelection (orig_cursor, cursor);
+                    } else {
+                        plot_top.ClearSelection ();
+                    }
+                }
+                bstate = BUTTON_UP;
                 break;
             case ALLEGRO_EVENT_MOUSE_AXES:
                 cursor.X (event.mouse.x);
                 cursor.Y (event.mouse.y);
-                if (! al_is_event_queue_empty (events)) {
-                    /* TODO: jump to beginning of the switch */
-                    while (! al_is_event_queue_empty (events)) {
-                        al_get_next_event (events, &event);
-                        cursor.X (event.mouse.x);
-                        cursor.Y (event.mouse.y);
+                if (point_in_plot (plot_top, cursor)) {
+                    if (BUTTON_DOWN == bstate) {
+                        plot_top.DrawSelection (orig_cursor, cursor);
                     }
                 }
                 break;
@@ -173,6 +194,11 @@ int main () {
             default:
                 /* */
                 break;
+        }
+
+        if (! al_is_event_queue_empty (events)) {
+            al_get_next_event (events, &event);
+            goto next_event;
         }
 
         plot_top.Update ();

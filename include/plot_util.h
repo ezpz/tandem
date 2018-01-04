@@ -28,7 +28,9 @@ struct Margin {
 
 struct Options {
 
-    ALLEGRO_COLOR       col;        /* color */
+    ALLEGRO_COLOR       col;        /* default point/line color */
+    ALLEGRO_COLOR       fill;       /* default fill color */
+    ALLEGRO_COLOR       sfill;      /* fill color for selection */
     float               lwd;        /* line width */
     float               cex;        /* expansion factor for points/text */
     ALLEGRO_FONT        *font;      /* default font */

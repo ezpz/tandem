@@ -80,13 +80,24 @@ Line PlotArea::ClipLine (const Line &line) {
  * Assumes that p has been validated using PlotArea::Contains
  */
 Point PlotArea::Normalize (const Point &p) const {
-   float wpx = Width () - (border_.left + border_.right);
-   float hpx = Height () - (border_.top + border_.bottom);
-   float xrange = opt_.xlim.Delta ();
-   float yrange = opt_.ylim.Delta ();
-   float xpxpp  = wpx / xrange, ypxpp = hpx / yrange;
-   return Point (p.X () * xpxpp, p.Y () * ypxpp);
+    float wpx = Width () - (border_.left + border_.right);
+    float hpx = Height () - (border_.top + border_.bottom);
+    float xrange = opt_.xlim.Delta ();
+    float yrange = opt_.ylim.Delta ();
+    float xpxpp  = wpx / xrange, ypxpp = hpx / yrange;
+    return Point (p.X () * xpxpp, p.Y () * ypxpp);
 }
+
+//bool PlotArea::Point2Value (const Point &p, float &xval, float &yval) {
+//    float wpx = Width () - (border_.left + border_.right);
+//    float hpx = Height () - (border_.top + border_.bottom);
+//    float xrange = opt_.xlim.Delta ();
+//    float yrange = opt_.ylim.Delta ();
+//    float xpxpp  = wpx / xrange, ypxpp = hpx / yrange;
+//    xval = (p.X () - border_.left) / xpxpp;
+//    yval = ((Height () - p.Y ()) - border_.bottom) / ypxpp;
+//    return true;
+//}
 
 Line PlotArea::Normalize (const Line &l) const {
     Point a = Normalize (l.Start ()), b = Normalize (l.End ());
@@ -134,6 +145,16 @@ void PlotArea::DrawAllText () const {
         al_draw_text (IT->opt.font, IT->opt.col,
                 IT->np.X (), Height () - IT->np.Y (),
                 IT->opt.align, IT->txt.c_str ());
+    }
+}
+
+void PlotArea::DrawAllRectangles () const {
+    /* TODO: rectangle iteration */
+    if (selection_) { 
+        al_draw_filled_rectangle (sp1_.X (), sp1_.Y (), 
+                sp2_.X (), sp2_.Y (), opt_.sfill);
+        al_draw_rectangle (sp1_.X (), sp1_.Y (),
+                sp2_.X (), sp2_.Y (), opt_.sfill, 3);
     }
 }
 
@@ -286,6 +307,23 @@ void PlotArea::Axis (int which, const Options &o) {
     }
 }
 
-//void PlotArea::DrawRectangle (const Point &ll, const Point &ur);
-//void PlotArea::DrawRectangle (const Point &ll, const Point &ur, const Options &o);
+void PlotArea::ClearSelection () { selection_ = false; }
 
+void PlotArea::DrawSelection (const Point &p1, const Point &p2) {
+    sp1_ = p1;
+    sp2_ = p2;
+    selection_ = true;
+}
+
+/* 
+ * XXX: Move this inside the class?
+ */
+bool point_in_plot (const PlotArea &plot, const Point &p) {
+    Point origin = plot.GetWindowOrigin (),
+          corner (origin.X () + plot.GetWindowPlotWidth (), 
+                  origin.Y () - plot.GetWindowPlotHeight ());
+    return (p.X () >= origin.X () &&
+            p.X () <= corner.X () &&
+            p.Y () >= corner.Y () && // y-axis in window coords has 0 at
+            p.Y () <= origin.Y ());  // top; hence reversal here
+}
