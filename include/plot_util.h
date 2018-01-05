@@ -72,20 +72,23 @@ struct Border {
 
 class Point {
 
-    double x_, y_;
+    float x_, y_;
 
 public:
 
     Point (const Point &other) : x_(other.X ()), y_(other.Y ()) {}
-    Point (double x, double y) : x_(x), y_(y) {}
+    Point (float x, float y) : x_(x), y_(y) {}
     Point () : x_(0.0), y_(0.0) {}
 
-    double X () const { return x_; }
-    double Y () const { return y_; }
+    float X () const { return x_; }
+    float Y () const { return y_; }
 
-    void X (double x) { x_ = x; }
-    void Y (double y) { y_ = y; }
+    void X (float x) { x_ = x; }
+    void Y (float y) { y_ = y; }
 
+    bool operator==(const Point &that) const {
+        return (X () == that.X () && Y () == that.Y ());
+    }
 };
 
 

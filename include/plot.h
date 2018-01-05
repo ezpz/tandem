@@ -25,6 +25,7 @@ class PlotArea {
     void DrawAllLines () const;
     void DrawAllText () const;
     void DrawAllRectangles () const;
+    void DrawPulse () const;
 
     /*
      * Clip line to plot area 

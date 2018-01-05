@@ -85,19 +85,9 @@ Point PlotArea::Normalize (const Point &p) const {
     float xrange = opt_.xlim.Delta ();
     float yrange = opt_.ylim.Delta ();
     float xpxpp  = wpx / xrange, ypxpp = hpx / yrange;
-    return Point (p.X () * xpxpp, p.Y () * ypxpp);
+    return Point (border_.left + p.X () * xpxpp, 
+            border_.bottom + p.Y () * ypxpp);
 }
-
-//bool PlotArea::Point2Value (const Point &p, float &xval, float &yval) {
-//    float wpx = Width () - (border_.left + border_.right);
-//    float hpx = Height () - (border_.top + border_.bottom);
-//    float xrange = opt_.xlim.Delta ();
-//    float yrange = opt_.ylim.Delta ();
-//    float xpxpp  = wpx / xrange, ypxpp = hpx / yrange;
-//    xval = (p.X () - border_.left) / xpxpp;
-//    yval = ((Height () - p.Y ()) - border_.bottom) / ypxpp;
-//    return true;
-//}
 
 Line PlotArea::Normalize (const Line &l) const {
     Point a = Normalize (l.Start ()), b = Normalize (l.End ());
@@ -155,6 +145,24 @@ void PlotArea::DrawAllRectangles () const {
                 sp2_.X (), sp2_.Y (), opt_.sfill);
         al_draw_rectangle (sp1_.X (), sp1_.Y (),
                 sp2_.X (), sp2_.Y (), opt_.sfill, 3);
+        DrawPulse ();
+    }
+}
+
+void
+PlotArea::DrawPulse () const {
+    std::vector< PointData >::const_iterator PIT = points_.begin (),
+        PEND = points_.end ();
+    float minx = std::min (sp1_.X (), sp2_.X ()),
+          maxx = std::max (sp1_.X (), sp2_.X ()),
+          miny = std::min (Height () - sp1_.Y (), Height () - sp2_.Y ()),
+          maxy = std::max (Height () - sp1_.Y (), Height () - sp2_.Y ());
+    for (; PIT != PEND; ++PIT) {
+        float x = PIT->np.X (), y = PIT->np.Y ();
+        if (x >= minx && x <= maxx && y >= miny && y <= maxy) {
+            al_draw_filled_circle (PIT->np.X (), Height () - PIT->np.Y (),
+                    2.0 * PIT->opt.cex, PIT->opt.col);
+        }
     }
 }
 
@@ -166,9 +174,6 @@ void PlotArea::DrawPoint (const Point &p, const Options &o) {
 
     GrabFocus ();
     Point np = Normalize (p);
-    /* Adjust normalized point for margins */
-    np.X (np.X () + border_.left);
-    np.Y (np.Y () + border_.bottom);
     PointData pd(p, np, o);
     points_.push_back (pd);
     al_draw_filled_circle (np.X (), Height () - np.Y (), 
@@ -189,14 +194,6 @@ void PlotArea::DrawLine (const Line &l, const Options &o) {
 
     Line clip = ClipLine (l);
     Line nl = Normalize (clip);
-
-    Point a = nl.Start (), b = nl.End ();
-    a.X (a.X () + border_.left);
-    a.Y (a.Y () + border_.bottom);
-    b.X (b.X () + border_.left);
-    b.Y (b.Y () + border_.bottom);
-
-    nl = Line(a, b);
 
     LineData ld(l, nl, o);
     lines_.push_back (ld);
@@ -270,7 +267,7 @@ void PlotArea::Axis (int which, const Options &o) {
     switch (which) {
         case 1: /* bottom */
             delta = opt_.xlim.Delta () / opt_.xticks;
-            for (x = delta; x < opt_.xlim.high; x += delta) {
+            for (x = opt_.xlim.low + delta; x < opt_.xlim.high; x += delta) {
                 DrawLine (Point (x, 0), Point (x, off), o);
                 snprintf (txt, sizeof (txt), "%d", 
                         static_cast< int >(roundf (x)));
@@ -280,7 +277,7 @@ void PlotArea::Axis (int which, const Options &o) {
             break;
         case 2: /* left */
             delta = opt_.ylim.Delta () / opt_.yticks;
-            for (y = delta; y < opt_.ylim.high; y += delta) {
+            for (y = opt_.ylim.low + delta; y < opt_.ylim.high; y += delta) {
                 DrawLine (Point (0, y), Point (off, y), o);
                 snprintf (txt, sizeof (txt), "%d", 
                         static_cast< int >(roundf (y)));
@@ -292,13 +289,13 @@ void PlotArea::Axis (int which, const Options &o) {
             break;
         case 3: /* top */
             delta = opt_.xlim.Delta () / opt_.xticks;
-            for (x = delta; x < opt_.xlim.high; x += delta) {
+            for (x = opt_.xlim.low + delta; x < opt_.xlim.high; x += delta) {
                 DrawLine (Point (x, Height ()), Point (x, Height () - off), o);
             }
             break;
         case 4: /* right */
             delta = opt_.ylim.Delta () / opt_.yticks;
-            for (y = delta; y < opt_.ylim.high; y += delta) {
+            for (y = opt_.ylim.low + delta; y < opt_.ylim.high; y += delta) {
                 DrawLine (Point (Width (), y), Point (Width () - off, y), o);
             }
             break;

@@ -8,6 +8,7 @@
 - [ ] Plot titles
 - [ ] Fix Axis labels
 - [x] Top and left plots in unison
+- [ ] Handle negative axis ranges
 
 ### Types of views in corner display
 - [ ] Median with std dev circles around selected points

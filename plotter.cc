@@ -10,6 +10,11 @@
 #include <allegro5/allegro_ttf.h>
 #include <zmq.hpp>
 
+extern "C" {
+#include <unistd.h>
+#include <libgen.h>
+}
+
 #include "plot_util.h"
 #include "plot.h"
 
@@ -22,8 +27,8 @@ void load (const char *csv, std::vector< Point > &pts) {
     FILE *fin = fopen (csv, "rb");
     if (NULL == fin) { return; }
     while (! ferror (fin) && ! feof (fin)) {
-        int x = 0, y = 0;
-        if (2 != fscanf (fin, "%d,%d", &x, &y)) {
+        float x = 0, y = 0;
+        if (2 != fscanf (fin, "%f,%f", &x, &y)) {
             return;
         }
         pts.push_back (Point (x,y));
@@ -31,14 +36,32 @@ void load (const char *csv, std::vector< Point > &pts) {
     }
 }
 
-int main () {
+void usage (const char *prog) {
+    fprintf (stderr, "USAGE: %s <csv>\n", prog);
+    fprintf (stderr, "-------------------\n");
+    fprintf (stderr, " csv  CSV file with pairs of points\n");
+    fprintf (stderr, "\n");
+    exit(42);
+}
+
+int main (int argc, char **argv) {
+
     ALLEGRO_EVENT_QUEUE *events = NULL;
     ALLEGRO_DISPLAY *screens[3] = { NULL };
 
     int adapter_count = 0;
     int monitor_x = 0, monitor_y = 0, screen_x = 0, screen_y = 0;
     float minx = 0, miny = 0, maxx = 0, maxy = 0;
+    const char *csv = NULL;
     button_state bstate = BUTTON_UP;
+
+    if (2 != argc) {
+        char prog[1024] = {0};
+        strncpy (prog, argv[0], 1024);
+        usage (basename (prog));
+    }
+
+    csv = argv[1];
 
     srand (time (NULL));
 
@@ -91,20 +114,21 @@ int main () {
              plot_both(screens[1]);
 
     std::vector< Point > xs;
-    load ("data/test.csv", xs);
+    load (csv, xs);
 
     std::vector< Point >::iterator PIT = xs.begin (), PEND = xs.end ();
     minx = maxx = PIT->X ();
     miny = maxy = PIT->Y ();
     for (; PIT != PEND; ++PIT) {
-        if (PIT->X () < minx) { minx = PIT->X (); }
-        if (PIT->Y () < miny) { miny = PIT->Y (); }
-        if (PIT->X () > maxx) { maxx = PIT->X (); }
-        if (PIT->Y () > maxy) { maxy = PIT->Y (); }
+        minx = std::min (minx, PIT->X ());
+        maxx = std::max (maxx, PIT->X ());
+        miny = std::min (miny, PIT->Y ());
+        maxy = std::max (maxy, PIT->Y ());
     }
 
-    Range xlim (minx, maxx), ylim (miny, maxy);
-
+    /* TODO: Put a buffer around the points */
+    Range xlim (minx , maxx), ylim (miny, maxy);
+    
     plot_top.SetXlim (xlim);
     plot_top.SetYlim (ylim);
     plot_bottom.SetXlim (xlim);
@@ -166,7 +190,7 @@ next_event:
                 cursor.X (event.mouse.x);
                 cursor.Y (event.mouse.y);
                 if (point_in_plot (plot_top, cursor)) {
-                    if (BUTTON_DOWN == bstate) {
+                    if (BUTTON_DOWN == bstate && !(cursor == orig_cursor)) {
                         plot_top.DrawSelection (orig_cursor, cursor);
                     } else {
                         plot_top.ClearSelection ();
