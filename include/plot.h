@@ -12,20 +12,33 @@ class PlotArea {
     Border border_;
 
     Range xlim, ylim;
-    Point sp1_, sp2_;
 
     bool selection_; /* is there currently a focused selection */
+    Point sp1_, sp2_; /* selection points; TODO make this a class/event */
+
     float width_, height_;
 
     std::vector< PointData > points_;
     std::vector< LineData > lines_;
     std::vector< TextData > strings_;
+    std::vector< RectData > rects_;
 
     void DrawAllPoints () const;
     void DrawAllLines () const;
     void DrawAllText () const;
     void DrawAllRectangles () const;
+
+    /* TODO: This is really a debugging feature... */
     void DrawPulse () const;
+
+    inline void PurgeRects () { rects_.clear (); }
+
+    /*
+     * Place in pts the set of points which fall within the bounding box
+     * defined by points a and b
+     */
+    void CollectPoints (const Point& a, const Point &b, 
+            std::vector< PointData > &pts) const;
 
     /*
      * Clip line to plot area 
@@ -160,6 +173,13 @@ public:
     inline float GetWindowPlotWidth () const {
         return (Width () - (border_.left + border_.right));
     }
+
+    /*
+     * Draw a histogram based on selected points or all points if there
+     * is no selection
+     */
+    void Histogram ();
+    void Histogram (const Options &opts);
 
 };
 

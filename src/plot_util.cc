@@ -22,6 +22,8 @@ void Options::Reset () {
     xticks = 7;
     yticks = 5;
 
+    nbins = 20;
+
     align = ALIGN_CENTER;
 
     col = mkcol (50, 50, 255, 255);

@@ -129,17 +129,23 @@ void PlotArea::DrawAllLines () const {
 }
 
 void PlotArea::DrawAllText () const {
-    std::vector< TextData >::const_iterator IT = strings_.begin (),
-        END = strings_.end ();
-    for (; IT != END; ++IT) {
-        al_draw_text (IT->opt.font, IT->opt.col,
-                IT->np.X (), Height () - IT->np.Y (),
-                IT->opt.align, IT->txt.c_str ());
+    std::vector< TextData >::const_iterator SIT = strings_.begin (),
+        SEND = strings_.end ();
+    for (; SIT != SEND; ++SIT) {
+        al_draw_text (SIT->opt.font, SIT->opt.col,
+                SIT->np.X (), Height () - SIT->np.Y (),
+                SIT->opt.align, SIT->txt.c_str ());
     }
 }
 
 void PlotArea::DrawAllRectangles () const {
-    /* TODO: rectangle iteration */
+    std::vector< RectData >::const_iterator RIT = rects_.begin (),
+        REND = rects_.end ();
+    for (; RIT != REND; ++RIT) {
+        al_draw_filled_rectangle (RIT->p1.X (), RIT->p1.Y (),
+                RIT->p2.X (), RIT->p2.Y (), RIT->opt.sfill);
+    }
+
     if (selection_) { 
         al_draw_filled_rectangle (sp1_.X (), sp1_.Y (), 
                 sp2_.X (), sp2_.Y (), opt_.sfill);
@@ -149,20 +155,33 @@ void PlotArea::DrawAllRectangles () const {
     }
 }
 
-void
-PlotArea::DrawPulse () const {
+void PlotArea::CollectPoints (const Point &a, const Point &b,
+        std::vector< PointData > &pts) const {
+
+    float minx = std::min (a.X (), b.X ()),
+          maxx = std::max (a.X (), b.X ()),
+          miny = std::min (Height () - a.Y (), Height () - b.Y ()),
+          maxy = std::max (Height () - a.Y (), Height () - b.Y ());
+
     std::vector< PointData >::const_iterator PIT = points_.begin (),
         PEND = points_.end ();
-    float minx = std::min (sp1_.X (), sp2_.X ()),
-          maxx = std::max (sp1_.X (), sp2_.X ()),
-          miny = std::min (Height () - sp1_.Y (), Height () - sp2_.Y ()),
-          maxy = std::max (Height () - sp1_.Y (), Height () - sp2_.Y ());
+
     for (; PIT != PEND; ++PIT) {
         float x = PIT->np.X (), y = PIT->np.Y ();
         if (x >= minx && x <= maxx && y >= miny && y <= maxy) {
-            al_draw_filled_circle (PIT->np.X (), Height () - PIT->np.Y (),
-                    2.0 * PIT->opt.cex, PIT->opt.col);
+            pts.push_back (*PIT);
         }
+    }
+}
+
+void
+PlotArea::DrawPulse () const {
+    std::vector< PointData > pts;
+    CollectPoints (sp1_, sp2_, pts);
+    std::vector< PointData >::iterator PIT = pts.begin (), PEND = pts.end ();
+    for (; PIT != PEND; ++PIT) {
+        al_draw_filled_circle (PIT->np.X (), Height () - PIT->np.Y (),
+                2.0 * PIT->opt.cex, PIT->opt.col);
     }
 }
 
@@ -202,6 +221,84 @@ void PlotArea::DrawLine (const Line &l, const Options &o) {
     al_draw_line (nl.Start ().X (), Height () - nl.Start ().Y (),
             nl.End ().X (), Height () - nl.End ().Y (),
             o.col, o.lwd);
+}
+
+void PlotArea::Histogram () { Histogram (opt_); }
+
+void PlotArea::Histogram (const Options &o) {
+
+    Point p1 = sp1_, p2 = sp2_;
+    if (! selection_) {
+        p1 = Normalize (Point (opt_.xlim.low, opt_.ylim.low));
+        p2 = Normalize (Point (opt_.xlim.high, opt_.ylim.high));
+    }
+
+    float lowx = std::min (p1.X (), p2.X ()),
+          lowy = std::min (Height () - p1.Y (), Height () - p2.Y ()),
+          highx = std::max (p1.X (), p2.X ()),
+          highy = std::max (Height () - p1.Y (), Height () - p2.Y ());
+
+    std::vector< PointData > pts;
+    CollectPoints (p1, p2, pts);
+
+    if (pts.empty ()) { return; }
+
+    /* Calculate X axis distribution */
+    float stridex = (highx - lowx) / static_cast< float >(o.nbins),
+          stridey = (highy - lowy) / static_cast< float >(o.nbins),
+          xpx = (highx - lowx) / o.nbins,
+          ypx = (highy - lowy) / o.nbins;
+
+    if (0.0 == stridex || 0.0 == stridey) { 
+        fprintf (stderr, "Unable to calculate a valid stride\n");
+        return; 
+    }
+
+    int hmaxx = 0, hmaxy = 0;
+    std::vector< int > xbins(o.nbins + 1), ybins(o.nbins + 1);
+    std::vector< PointData >::iterator PIT = pts.begin (), PEND = pts.end ();
+    for (; PIT != PEND; ++PIT) {
+        int bin = static_cast< int >(floorf ((PIT->np.X () - lowx) / stridex));
+        xbins[bin] += 1;
+        hmaxx = std::max (hmaxx, xbins[bin]);
+        bin = static_cast< int >(floorf ((PIT->np.Y () - lowy) / stridey));
+        ybins[bin] += 1;
+        hmaxy = std::max (hmaxy, ybins[bin]);
+    }
+
+    /* Remove any prior calculation */
+    PurgeRects ();
+
+    /*
+     * Use bin values to place bar heights at fraction of height of plot area
+     */
+    float xbar_px = GetWindowPlotWidth () / 4.0, 
+          ybar_px = GetWindowPlotHeight () / 4.0;
+
+    /*
+     * TODO: Make this factions of the whole set, not counts per bin
+     */
+    float xbar_pxp = xbar_px / static_cast< float >(hmaxx),
+          ybar_pxp = ybar_px / static_cast< float >(hmaxy);
+
+    float xbdr = border_.left, ybdr = border_.top;
+
+    for (int i = 0; i < o.nbins; ++i) {
+        /* X-axis */
+        float xa = lowx + (i * xpx), xb = xa + xpx - 1;
+        float ya = 0.0, yb = xbar_pxp * xbins[i];
+        RectData rdx(Point (xa, ybdr + ya), Point (xb, ybdr + yb), o);
+        rects_.push_back (rdx);
+
+        /* Y-axis */
+        xa = 0.0;
+        xb = ybar_pxp * ybins[i];
+        ya = lowy + (i * ypx);
+        yb = ya + ypx - 1;
+        RectData rdy(Point (xbdr + xa, Height () - ya), 
+                Point (xbdr + xb, Height () - yb), o);
+        rects_.push_back (rdy);
+    }
 }
 
 void PlotArea::Box () { Box (opt_); }

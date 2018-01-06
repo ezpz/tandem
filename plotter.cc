@@ -133,6 +133,8 @@ int main (int argc, char **argv) {
     plot_top.SetYlim (ylim);
     plot_bottom.SetXlim (xlim);
     plot_bottom.SetYlim (ylim);
+    plot_both.SetYlim (ylim);
+    plot_both.SetXlim (xlim);
 
     events = al_create_event_queue ();
     if (NULL == events) {
@@ -157,6 +159,7 @@ int main (int argc, char **argv) {
     o.lwd = 2.5;
     plot_top.Box (o);
     plot_bottom.Box (o);
+    plot_both.Box (o);
 
     o = Options::Defaults ();
     o.cex = 2.5;
@@ -164,6 +167,7 @@ int main (int argc, char **argv) {
     for (; PIT != PEND; ++PIT) {
         plot_top.DrawPoint (*PIT, o);
         plot_bottom.DrawPoint (*PIT, o);
+        plot_both.DrawPoint (*PIT, o);
     }
 
     while (true) {
@@ -174,6 +178,7 @@ int main (int argc, char **argv) {
         /* Not the best place to have this */
         plot_top.Clear ();
         plot_bottom.Clear ();
+        plot_both.Clear ();
 
 next_event:
         switch (event.type) {
@@ -183,6 +188,9 @@ next_event:
                 if (point_in_plot (plot_top, cursor)) {
                     orig_cursor = cursor;
                     plot_top.DrawSelection (orig_cursor, cursor);
+                    plot_bottom.DrawSelection (orig_cursor, cursor);
+                    plot_both.DrawSelection (orig_cursor, cursor);
+                    plot_both.Histogram ();
                     bstate = BUTTON_DOWN;
                 }
                 break;
@@ -192,8 +200,14 @@ next_event:
                 if (point_in_plot (plot_top, cursor)) {
                     if (BUTTON_DOWN == bstate && !(cursor == orig_cursor)) {
                         plot_top.DrawSelection (orig_cursor, cursor);
+                        plot_bottom.DrawSelection (orig_cursor, cursor);
+                        plot_both.DrawSelection (orig_cursor, cursor);
+                        plot_both.Histogram ();
                     } else {
                         plot_top.ClearSelection ();
+                        plot_bottom.ClearSelection ();
+                        plot_both.ClearSelection ();
+                        plot_both.Histogram ();
                     }
                 }
                 bstate = BUTTON_UP;
@@ -204,6 +218,9 @@ next_event:
                 if (point_in_plot (plot_top, cursor)) {
                     if (BUTTON_DOWN == bstate) {
                         plot_top.DrawSelection (orig_cursor, cursor);
+                        plot_bottom.DrawSelection (orig_cursor, cursor);
+                        plot_both.DrawSelection (orig_cursor, cursor);
+                        plot_both.Histogram ();
                     }
                 }
                 break;
@@ -225,8 +242,10 @@ next_event:
             goto next_event;
         }
 
+
         plot_top.Update ();
         plot_bottom.Update ();
+        plot_both.Update ();
     }
 
 outly:

@@ -38,6 +38,7 @@ struct Options {
     int                 xticks;     /* number of tick marks on x axis */
     int                 yticks;     /* number of tick marks on y axis */
     int                 align;      /* text alignment */
+    int                 nbins;      /* number of histogram bins */
 
     Margin              oma;        /* outer margins */
     Range               xlim, ylim; /* plot region bounds */
@@ -132,6 +133,15 @@ struct LineData {
 private:
 
     LineData ();
+};
+
+struct RectData {
+    Point p1; 
+    Point p2;
+    Options opt;
+
+    RectData (const Point &a, const Point &b, const Options &o) :
+        p1(a), p2(b), opt(o) {}
 };
 
 struct TextData {
