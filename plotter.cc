@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cerrno>
 #include <cstdlib>
 #include <vector>
 #include <cmath>
@@ -13,6 +14,7 @@
 extern "C" {
 #include <unistd.h>
 #include <libgen.h>
+#include <sys/stat.h>
 }
 
 #include "plot_util.h"
@@ -44,6 +46,15 @@ void usage (const char *prog) {
     exit(42);
 }
 
+bool valid_file (const char *path) {
+    struct stat sb;
+    if (-1 == stat (path, &sb)) {
+        fprintf (stderr, "Invalid CSV argument: %s\n", strerror (errno));
+        return false;
+    }
+    return true;
+}
+
 int main (int argc, char **argv) {
 
     ALLEGRO_EVENT_QUEUE *events = NULL;
@@ -62,6 +73,10 @@ int main (int argc, char **argv) {
     }
 
     csv = argv[1];
+
+    if (! valid_file (csv)) {
+        return 1;
+    }
 
     srand (time (NULL));
 
@@ -116,7 +131,7 @@ int main (int argc, char **argv) {
     std::vector< Point > xs;
     load (csv, xs);
 
-    std::vector< Point >::iterator PIT = xs.begin (), PEND = xs.end ();
+    std::vector< Point >::const_iterator PIT = xs.begin (), PEND = xs.end ();
     minx = maxx = PIT->X ();
     miny = maxy = PIT->Y ();
     for (; PIT != PEND; ++PIT) {
@@ -128,7 +143,7 @@ int main (int argc, char **argv) {
 
     /* TODO: Put a buffer around the points */
     Range xlim (minx , maxx), ylim (miny, maxy);
-    
+
     plot_top.SetXlim (xlim);
     plot_top.SetYlim (ylim);
     plot_bottom.SetXlim (xlim);

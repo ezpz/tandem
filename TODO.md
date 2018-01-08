@@ -10,6 +10,7 @@
 - [ ] Fix Axis labels
 - [x] Top and left plots in unison
 - [ ] Handle negative axis ranges
+- [ ] Separate adding points and displaying (plot functions)
 
 ### Types of views in corner display
 - [ ] Median with std dev circles around selected points

@@ -85,8 +85,8 @@ Point PlotArea::Normalize (const Point &p) const {
     float xrange = opt_.xlim.Delta ();
     float yrange = opt_.ylim.Delta ();
     float xpxpp  = wpx / xrange, ypxpp = hpx / yrange;
-    return Point (border_.left + p.X () * xpxpp, 
-            border_.bottom + p.Y () * ypxpp);
+    return Point (border_.left + (p.X () - opt_.xlim.low) * xpxpp, 
+            border_.bottom + (p.Y () - opt_.ylim.low) * ypxpp);
 }
 
 Line PlotArea::Normalize (const Line &l) const {
