@@ -272,7 +272,7 @@ void PlotArea::Histogram (const Options &o) {
     /*
      * Use bin values to place bar heights at fraction of height of plot area
      */
-    float xbar_px = GetWindowPlotWidth () / 4.0, 
+    float xbar_px = GetWindowPlotWidth () / 8.0, 
           ybar_px = GetWindowPlotHeight () / 4.0;
 
     /*
