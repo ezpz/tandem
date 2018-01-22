@@ -17,7 +17,7 @@ SRCS = src/plot.cc \
 	   plotter.cc
 
 refs:
-	cscope -b -q -R src/* include/* plotter.cc
+	cscope -b -R src/* include/* plotter.cc
 
 plot: refs
 	g++ $(FLAGS) $(INC) $(SRCS) $(LIBS) -o plot
