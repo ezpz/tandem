@@ -1,7 +1,5 @@
 
-ALL = plot refs
-
-default: plot
+default: all
 
 FLAGS = -W -Wall -Wextra -Werror
 FLAGS += -ggdb
@@ -10,17 +8,24 @@ BASE_LIBS = -lm
 ALLEGRO_LIBS = -lallegro -lallegro_primitives -lallegro_font -lallegro_ttf
 LIBS = $(BASE_LIBS) $(ALLEGRO_LIBS)
 
-INC = -I./include
+INC = -I./include 
 
-SRCS = src/plot.cc \
-	   src/plot_util.cc \
-	   plotter.cc
+DIRS = src src/graph
+SRCS = $(wildcard $(DIRS:=/*.cc))
+OBJS = $(patsubst %.cc,%.o,$(SRCS))
 
 refs:
-	cscope -b -R src/* include/* plotter.cc
+	cscope -b -R 
 
-plot: refs
-	g++ $(FLAGS) $(INC) $(SRCS) $(LIBS) -o plot
+plot: plotter.cc $(OBJS)
+	g++ $(FLAGS) $(INC) $^ $(LIBS) -o $@
+
+$(OBJS): %.o: %.cc
+	g++ $(FLAGS) $(INC) $^ $(LIBS) -c -o $@ 
+
+all: plot refs
 
 clean:
-	rm -f $(ALL)
+	rm -f $(OBJS)
+	rm -f plot
+	rm -f cscope.out
