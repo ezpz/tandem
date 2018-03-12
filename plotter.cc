@@ -187,7 +187,10 @@ int main (int argc, char **argv) {
     */
 
     plot_top.Clear ();
-    plot_top.Plot (xs);
+    plot_top.Points (xs);
+    std::vector< Line > lines;
+    lines.push_back (Line(Point(-200,0), Point(200, 100)));
+    plot_top.Lines (lines);
     plot_top.Update ();
     /*
     o = Parameters::Defaults ();

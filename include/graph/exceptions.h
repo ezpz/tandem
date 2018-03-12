@@ -23,6 +23,19 @@ struct GeneralException : public std::exception {
 
 };
 
+struct NotImplemented : public std::exception {
+    std::string msg_;
+    NotImplemented (const char *msg) :
+        std::exception() {
+        char buff[512] = {0};
+        snprintf (buff, 512, "Not Implemented: %s", msg);
+        msg_ = std::string(buff);
+    }
+    virtual ~NotImplemented () throw () {}
+    virtual const char *what () const throw () { return msg_.c_str (); }
+
+};
+
 struct InvalidRange : public std::exception {
     std::string msg_;
     InvalidRange (const FloatType& x, const FloatType& y) : 

@@ -14,6 +14,7 @@
 - [x] Modularize code and improve directory/file layout
 - [x] Better build process (clean and use Makefile properly)
 - [ ] Make cindent normalization script
+- [ ] Regression/unit test support; integrated with build
 
 ### Types of views in corner display
 - [ ] Median with std dev circles around selected points

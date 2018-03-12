@@ -2,6 +2,7 @@
 #define RANGE_H__
 
 #include <graph/types.h>
+#include <graph/primitives.h>
 
 class Range {
 

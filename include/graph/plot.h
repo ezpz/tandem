@@ -66,6 +66,9 @@ public:
 
     virtual void Clear () const;
     virtual void Box () const;
+
+    virtual void Points (const std::vector< Point >& points);
+    virtual void Lines (const std::vector< Line >& points);
     
 };
 
@@ -86,7 +89,8 @@ public:
     void Xlim (FloatType low, FloatType high);
     void Ylim (FloatType low, FloatType high);
 
-    void Plot (const std::vector< Point >& points);
+    void Points (const std::vector< Point >& points);
+    void Lines (const std::vector< Line >& lines);
 
 };
 
