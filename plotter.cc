@@ -129,7 +129,7 @@ int main (int argc, char **argv) {
     al_set_window_position (screens[2], monitor_x - 2 * screen_x, 
             monitor_y - screen_y);
 
-    ScatterPlot scatterplot(screens[0]); 
+    ScatterPlot scatterplot(screens[1]); 
     /*
              plot_bottom(screens[2]), 
              plot_both(screens[1]);
@@ -148,9 +148,10 @@ int main (int argc, char **argv) {
         maxy = std::max (maxy, PIT->Y ());
     }
 
-    /* TODO: Put a buffer around the points */
     scatterplot.Xlim (minx, maxx);
     scatterplot.Ylim (miny, maxy);
+
+
     /*
     plot_bottom.SetXlim (xlim);
     plot_bottom.SetYlim (ylim);
@@ -183,6 +184,9 @@ int main (int argc, char **argv) {
     scatterplot.Grid ();
     scatterplot.XTicks ();
     scatterplot.YTicks ();
+    scatterplot.Text (
+            Point (minx + (maxx - minx) / 2.0, miny + (maxy - miny) / 2.0), 
+            "Some Text");
     scatterplot.Update ();
 
     /*

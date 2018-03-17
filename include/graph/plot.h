@@ -48,7 +48,8 @@ protected:
     FloatType DisplayWidth () const { return al_get_display_width (win_); }
     FloatType DisplayHeight () const { return al_get_display_height (win_); }
     const Parameters& Par () const { return par_; }
-    const ViewPort& PlotArea () const { return view_; }
+    const Range& XRange () const { return view_.XRange (); }
+    const Range& YRange () const { return view_.YRange (); }
 
 public:
 
@@ -72,6 +73,7 @@ public:
 
     virtual void Points (const std::vector< Point >& points);
     virtual void Lines (const std::vector< Line >& points);
+    virtual void Text (const Point& at, const std::string& text);
     
 };
 
@@ -97,8 +99,11 @@ public:
 
     void Points (const std::vector< Point >& points);
     void Lines (const std::vector< Line >& lines);
+    void Text (const Point& at, const std::string& text);
 
 };
 
+class Histogram : public BasicPlot {
+};
 
 #endif /*PLOT_H__*/

@@ -50,8 +50,8 @@ void ScatterPlot::XTicks () const {
 
     for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
         al_draw_textf (par.font, col, 
-                transform (x, XDomain (), PlotArea ().XRange ()), 
-                transform (ymin, YDomain (), PlotArea ().YRange ()) + off, 
+                transform (x, XDomain (), XRange ()), 
+                transform (ymin, YDomain (), YRange ()) + off, 
                 ALIGN_CENTER, 
                 "%ld", static_cast< long >(floor (x)));
     }
@@ -70,8 +70,8 @@ void ScatterPlot::YTicks () const {
 
     for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
         al_draw_textf (par.font, col, 
-                transform (xmin, XDomain (), PlotArea ().XRange ()) - xoff, 
-                transform (y, YDomain (), PlotArea ().YRange ()) - yoff, 
+                transform (xmin, XDomain (), XRange ()) - xoff, 
+                transform (y, YDomain (), YRange ()) - yoff, 
                 ALIGN_RIGHT, 
                 "%ld", static_cast< long >(floor (y)));
     }
@@ -113,6 +113,20 @@ void BasicPlot::Lines (const std::vector< Line >&) {
     throw NotImplemented ("BasicPlot::Lines");
 }
 
+void BasicPlot::Text (const Point&, const std::string&) {
+    throw NotImplemented ("BasicPlot::Text");
+}
+
+void ScatterPlot::Text (const Point& at, const std::string& text) {
+    /* TODO: Load font according to Par () cex ? */
+    ALLEGRO_COLOR col = mkcol (255, 255, 255, 255);
+    al_draw_textf (Par ().font, col, 
+            transform (at.X (), XDomain (), XRange ()), 
+            transform (at.Y (), YDomain (), YRange ()), 
+            ALIGN_LEFT, 
+            "%s", text.c_str ());
+}
+
 void ScatterPlot::Xlim (FloatType xmin, FloatType xmax) {
     xdomain_.Reset (xmin, xmax);
 }
@@ -127,8 +141,8 @@ void ScatterPlot::Points (const std::vector< Point >& points) {
 
     for (; PIT != PEND; ++PIT) {
         /* transform from dataset domain to plot range */
-        FloatType x = transform (PIT->X (), XDomain (), PlotArea ().XRange ());
-        FloatType y = transform (PIT->Y (), YDomain (), PlotArea ().YRange ());
+        FloatType x = transform (PIT->X (), XDomain (), XRange ());
+        FloatType y = transform (PIT->Y (), YDomain (), YRange ());
         al_draw_filled_circle (x, y, 1.0, Par ().col);
     }
 }
@@ -141,13 +155,13 @@ void ScatterPlot::Lines (const std::vector< Line >& lines) {
         /* transform from dataset domain to plot range */
         Line clipped = lineclip (XDomain (), YDomain (), *LIT);
         FloatType x1 = transform (clipped.Start ().X (), 
-                XDomain (), PlotArea ().XRange ());
+                XDomain (), XRange ());
         FloatType y1 = transform (clipped.Start ().Y (), 
-                YDomain (), PlotArea ().YRange ());
+                YDomain (), YRange ());
         FloatType x2 = transform (clipped.End ().X (), 
-                XDomain (), PlotArea ().XRange ());
+                XDomain (), XRange ());
         FloatType y2 = transform (clipped.End ().Y (), 
-                YDomain (), PlotArea ().YRange ());
+                YDomain (), YRange ());
         al_draw_line (x1, y1, x2, y2, Par ().col, Par ().lwd);
     }
 }
