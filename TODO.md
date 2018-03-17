@@ -1,5 +1,4 @@
 ### Next Steps
-- [x] Read in dataset from command line (dynamically setting ranges)
 - [ ] Move each display to it's own thread
 - [ ] Rectangular selection highlights points
 - [ ] Events processed using 0MQ
@@ -7,14 +6,16 @@
 - [ ] General text drawing
 - [ ] Histogram view doesnt include other views (only the histogram)
 - [ ] Plot titles
-- [ ] Fix Axis labels
 - [ ] Top and left plots in unison
-- [x] Handle negative axis ranges
 - [ ] Separate adding points and displaying (plot functions)
+- [ ] Make cindent normalization script
+- [ ] Collect aspect ratio of screen when creating plots
+- [ ] Regression/unit test support; integrated with build
+- [x] Fix Axis labels
 - [x] Modularize code and improve directory/file layout
 - [x] Better build process (clean and use Makefile properly)
-- [ ] Make cindent normalization script
-- [ ] Regression/unit test support; integrated with build
+- [x] Handle negative axis ranges
+- [x] Read in dataset from command line (dynamically setting ranges)
 
 ### Types of views in corner display
 - [ ] Median with std dev circles around selected points
@@ -25,3 +26,4 @@
 - [ ] Dotted lines for grid
 - [ ] Dynamically resize plot area
 - [ ] Non-scatterplot views in upper/lower plots
+- [ ] Command line interface (i.e. 'language')

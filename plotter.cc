@@ -87,6 +87,7 @@ int main (int argc, char **argv) {
         return 1;
     }
 
+    /* TODO: get aspect ratio to force/enable square graphs */
     adapter_count = al_get_num_video_adapters ();
     for (int i = 0; i < adapter_count; ++i) {
         ALLEGRO_MONITOR_INFO minfo;
