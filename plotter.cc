@@ -128,7 +128,7 @@ int main (int argc, char **argv) {
     al_set_window_position (screens[2], monitor_x - 2 * screen_x, 
             monitor_y - screen_y);
 
-    ScatterPlot plot_top(screens[0]); 
+    ScatterPlot scatterplot(screens[0]); 
     /*
              plot_bottom(screens[2]), 
              plot_both(screens[1]);
@@ -148,8 +148,8 @@ int main (int argc, char **argv) {
     }
 
     /* TODO: Put a buffer around the points */
-    plot_top.Xlim (minx, maxx);
-    plot_top.Ylim (miny, maxy);
+    scatterplot.Xlim (minx, maxx);
+    scatterplot.Ylim (miny, maxy);
     /*
     plot_bottom.SetXlim (xlim);
     plot_bottom.SetYlim (ylim);
@@ -170,34 +170,24 @@ int main (int argc, char **argv) {
     al_register_event_source (events, al_get_keyboard_event_source ());
     al_register_event_source (events, al_get_mouse_event_source ());
 
+
+    /*
     Parameters o = Parameters::Defaults ();
-
-    o.lwd = 0.0;
-    o.col = mkcol (233, 233, 233, 20);
-    /*
-    plot_top.Grid (o);
-    plot_bottom.Grid (o);
+    scatterplot.Grid (o);
     */
 
-    o.lwd = 2.5;
-    plot_top.Box ();
-    /*
-    plot_bottom.Box (o);
-    plot_both.Box (o);
-    */
+    scatterplot.Clear ();
+    scatterplot.Points (xs);
+    scatterplot.Box ();
+    scatterplot.Grid ();
+    scatterplot.XTicks ();
+    scatterplot.YTicks ();
+    scatterplot.Update ();
 
-    plot_top.Clear ();
-    plot_top.Points (xs);
-    std::vector< Line > lines;
-    lines.push_back (Line(Point(-200,0), Point(200, 100)));
-    plot_top.Lines (lines);
-    plot_top.Update ();
     /*
-    o = Parameters::Defaults ();
-    o.cex = 2.5;
     PIT = xs.begin (), PEND = xs.end ();
     for (; PIT != PEND; ++PIT) {
-        plot_top.DrawPoint (*PIT, o);
+        scatterplot.DrawPoint (*PIT, o);
         plot_bottom.DrawPoint (*PIT, o);
         plot_both.DrawPoint (*PIT, o);
     }
@@ -210,7 +200,7 @@ int main (int argc, char **argv) {
 
         /* Not the best place to have this */
         /*
-        plot_top.Clear ();
+        scatterplot.Clear ();
         */
         /*
         plot_bottom.Clear ();
@@ -225,9 +215,9 @@ next_event:
                 cursor.Y (event.mouse.y);
                 */
                 /*
-                if (point_in_plot (plot_top, cursor)) {
+                if (point_in_plot (scatterplot, cursor)) {
                     orig_cursor = cursor;
-                    plot_top.DrawSelection (orig_cursor, cursor);
+                    scatterplot.DrawSelection (orig_cursor, cursor);
                     plot_bottom.DrawSelection (orig_cursor, cursor);
                     plot_both.DrawSelection (orig_cursor, cursor);
                     plot_both.Histogram ();
@@ -243,14 +233,14 @@ next_event:
                 cursor.Y (event.mouse.y);
                 */
                 /*
-                if (point_in_plot (plot_top, cursor)) {
+                if (point_in_plot (scatterplot, cursor)) {
                     if (BUTTON_DOWN == bstate && !(cursor == orig_cursor)) {
-                        plot_top.DrawSelection (orig_cursor, cursor);
+                        scatterplot.DrawSelection (orig_cursor, cursor);
                         plot_bottom.DrawSelection (orig_cursor, cursor);
                         plot_both.DrawSelection (orig_cursor, cursor);
                         plot_both.Histogram ();
                     } else {
-                        plot_top.ClearSelection ();
+                        scatterplot.ClearSelection ();
                         plot_bottom.ClearSelection ();
                         plot_both.ClearSelection ();
                         plot_both.Histogram ();
@@ -267,9 +257,9 @@ next_event:
                 cursor.Y (event.mouse.y);
                 */
                 /*
-                if (point_in_plot (plot_top, cursor)) {
+                if (point_in_plot (scatterplot, cursor)) {
                     if (BUTTON_DOWN == bstate) {
-                        plot_top.DrawSelection (orig_cursor, cursor);
+                        scatterplot.DrawSelection (orig_cursor, cursor);
                         plot_bottom.DrawSelection (orig_cursor, cursor);
                         plot_both.DrawSelection (orig_cursor, cursor);
                         plot_both.Histogram ();
@@ -297,7 +287,7 @@ next_event:
 
 
         /*
-        plot_top.Update ();
+        scatterplot.Update ();
         plot_bottom.Update ();
         plot_both.Update ();
          */

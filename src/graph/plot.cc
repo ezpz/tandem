@@ -1,13 +1,19 @@
 
 #include <cstdio>
+#include <cmath>
 
 #include <graph/plot.h>
 #include <graph/util.h>
 #include <graph/exceptions.h>
 
 void BasicPlot::Initialize () {
-    view_.SetXRange (0.0, DisplayWidth ());
-    view_.SetYRange (DisplayHeight (), 0.0);
+    FloatType off_left = par_.oma.left * par_.font_px,
+              off_right = par_.oma.right * par_.font_px,
+              off_top = par_.oma.top * par_.font_px,
+              off_bottom = par_.oma.bottom * par_.font_px;
+
+    view_.SetXRange (0.0 + off_left, DisplayWidth () - off_right);
+    view_.SetYRange (DisplayHeight () - off_top, 0.0 + off_bottom);
 }
 
 void BasicPlot::GrabFocus () const {
@@ -28,7 +34,75 @@ void BasicPlot::Update () const {
 }
 
 void BasicPlot::Box () const {
-    /* TODO: implement */
+    al_draw_rectangle (view_.XRange ().Low (), view_.YRange ().Low (),
+            view_.XRange ().High (), view_.YRange ().High (), 
+            par_.col, par_.lwd);
+}
+
+void ScatterPlot::XTicks () const {
+    Parameters par = Par();
+    FloatType xstride = xdomain_.Distance () / par.xticks;
+    FloatType xmin = xdomain_.Low ();
+    FloatType xmax = xdomain_.High ();
+    FloatType ymin = ydomain_.Low ();
+    FloatType off = par.font_px;
+    ALLEGRO_COLOR col = mkcol (255, 255, 255, 255);
+
+    for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
+        al_draw_textf (par.font, col, 
+                transform (x, XDomain (), PlotArea ().XRange ()), 
+                transform (ymin, YDomain (), PlotArea ().YRange ()) + off, 
+                ALIGN_CENTER, 
+                "%ld", static_cast< long >(floor (x)));
+    }
+
+}
+
+void ScatterPlot::YTicks () const {
+    Parameters par = Par();
+    FloatType ystride = ydomain_.Distance () / par.yticks;
+    FloatType ymax = ydomain_.High ();
+    FloatType xmin = xdomain_.Low ();
+    FloatType ymin = ydomain_.Low ();
+    FloatType xoff = par.font_px;
+    FloatType yoff = par.font_px * 0.5;
+    ALLEGRO_COLOR col = mkcol (255, 255, 255, 255);
+
+    for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
+        al_draw_textf (par.font, col, 
+                transform (xmin, XDomain (), PlotArea ().XRange ()) - xoff, 
+                transform (y, YDomain (), PlotArea ().YRange ()) - yoff, 
+                ALIGN_RIGHT, 
+                "%ld", static_cast< long >(floor (y)));
+    }
+
+}
+
+void BasicPlot::Grid () const {
+    FloatType xstride = view_.XRange ().Distance () / par_.xticks,
+              ystride = view_.YRange ().Distance () / par_.yticks;
+    FloatType xmax = view_.XRange ().High (),
+              ymax = view_.YRange ().High ();
+    FloatType xmin = view_.XRange ().Low (),
+              ymin = view_.YRange ().Low ();
+    ALLEGRO_COLOR col = mkcol (192, 192, 192, 30);
+
+    for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
+        al_draw_line (x, ymin, x, ymax, col, 1);
+    }
+
+    for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
+        al_draw_line (xmin, y, xmax, y, col, 1);
+    }
+
+}
+
+void BasicPlot::XTicks () const {
+    throw NotImplemented ("BasicPlot::XTicks");
+}
+
+void BasicPlot::YTicks () const {
+    throw NotImplemented ("BasicPlot::YTicks");
 }
 
 void BasicPlot::Points (const std::vector< Point >&) {
@@ -52,10 +126,10 @@ void ScatterPlot::Points (const std::vector< Point >& points) {
         PEND = points.end ();
 
     for (; PIT != PEND; ++PIT) {
-        /* transform from dataset range to plot domain */
-        FloatType x = transform (PIT->X (), XRange (), PlotArea ().XRange ());
-        FloatType y = transform (PIT->Y (), YRange (), PlotArea ().YRange ());
-        al_draw_filled_circle (x, y, 1.5, mkcol (50, 50, 255, 255));
+        /* transform from dataset domain to plot range */
+        FloatType x = transform (PIT->X (), XDomain (), PlotArea ().XRange ());
+        FloatType y = transform (PIT->Y (), YDomain (), PlotArea ().YRange ());
+        al_draw_filled_circle (x, y, 1.0, Par ().col);
     }
 }
 
@@ -64,17 +138,17 @@ void ScatterPlot::Lines (const std::vector< Line >& lines) {
         LEND = lines.end ();
 
     for (; LIT != LEND; ++LIT) {
-        /* transform from dataset range to plot domain */
-        Line clipped = lineclip (XRange (), YRange (), *LIT);
+        /* transform from dataset domain to plot range */
+        Line clipped = lineclip (XDomain (), YDomain (), *LIT);
         FloatType x1 = transform (clipped.Start ().X (), 
-                XRange (), PlotArea ().XRange ());
+                XDomain (), PlotArea ().XRange ());
         FloatType y1 = transform (clipped.Start ().Y (), 
-                YRange (), PlotArea ().YRange ());
+                YDomain (), PlotArea ().YRange ());
         FloatType x2 = transform (clipped.End ().X (), 
-                XRange (), PlotArea ().XRange ());
+                XDomain (), PlotArea ().XRange ());
         FloatType y2 = transform (clipped.End ().Y (), 
-                YRange (), PlotArea ().YRange ());
-        al_draw_line (x1, y1, x2, y2, mkcol (50, 50, 255, 255), 1.5);
+                YDomain (), PlotArea ().YRange ());
+        al_draw_line (x1, y1, x2, y2, Par ().col, Par ().lwd);
     }
 }
 

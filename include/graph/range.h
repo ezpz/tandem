@@ -1,6 +1,7 @@
 #ifndef RANGE_H__
 #define RANGE_H__
 
+#include <cmath>
 #include <graph/types.h>
 #include <graph/primitives.h>
 
@@ -17,6 +18,8 @@ public:
     inline FloatType High () const { return high_; }
     inline FloatType X () const { return x_; }
     inline FloatType Y () const { return y_; }
+
+    inline FloatType Distance () const { return fabs (y_ - x_); }
 
     void Reset (FloatType x, FloatType y);
 

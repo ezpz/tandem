@@ -15,10 +15,10 @@ class ViewPort {
 
 public:
 
+    ViewPort () : xrange_(0.0, 1.0), yrange_(0.0, 1.0) {}
+
     inline const Range& XRange () const { return xrange_; }
     inline const Range& YRange () const { return yrange_; }
-
-    ViewPort () : xrange_(0.0, 1.0), yrange_(0.0, 1.0) {}
 
     void SetXRange (FloatType xmin, FloatType xmax) {
         xrange_.Reset (xmin, xmax);
@@ -47,8 +47,8 @@ protected:
     ALLEGRO_DISPLAY* Display () const { return win_; }
     FloatType DisplayWidth () const { return al_get_display_width (win_); }
     FloatType DisplayHeight () const { return al_get_display_height (win_); }
-    Parameters& Par () { return par_; }
-    ViewPort& PlotArea () { return view_; }
+    const Parameters& Par () const { return par_; }
+    const ViewPort& PlotArea () const { return view_; }
 
 public:
 
@@ -66,6 +66,9 @@ public:
 
     virtual void Clear () const;
     virtual void Box () const;
+    virtual void Grid () const;
+    virtual void XTicks () const;
+    virtual void YTicks () const;
 
     virtual void Points (const std::vector< Point >& points);
     virtual void Lines (const std::vector< Line >& points);
@@ -83,11 +86,14 @@ public:
 
     ScatterPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
 
-    inline const Range& XRange () const { return xdomain_; }
-    inline const Range& YRange () const { return ydomain_; }
+    inline const Range& XDomain () const { return xdomain_; }
+    inline const Range& YDomain () const { return ydomain_; }
 
     void Xlim (FloatType low, FloatType high);
     void Ylim (FloatType low, FloatType high);
+
+    void XTicks () const;
+    void YTicks () const;
 
     void Points (const std::vector< Point >& points);
     void Lines (const std::vector< Line >& lines);
