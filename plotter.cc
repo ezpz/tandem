@@ -19,6 +19,7 @@ extern "C" {
 
 #include <graph/plot.h>
 #include <graph/util.h>
+#include <graph/dataset.h>
 
 enum button_state {
     BUTTON_DOWN = 0,
@@ -130,6 +131,7 @@ int main (int argc, char **argv) {
             monitor_y - screen_y);
 
     ScatterPlot scatterplot(screens[1]); 
+    HistogramPlot histogram(screens[0]);
     /*
              plot_bottom(screens[2]), 
              plot_both(screens[1]);
@@ -137,6 +139,7 @@ int main (int argc, char **argv) {
 
     std::vector< Point > xs;
     load (csv, xs);
+    Dataset data(xs);
 
     std::vector< Point >::const_iterator PIT = xs.begin (), PEND = xs.end ();
     minx = maxx = PIT->X ();
@@ -178,16 +181,22 @@ int main (int argc, char **argv) {
     scatterplot.Grid (o);
     */
 
+    /*
+     * FIXME: This should happen on every event in the system
+     * capturing changes from the user.
+     */
     scatterplot.Clear ();
-    scatterplot.Points (xs);
+    scatterplot.Plot (data);
     scatterplot.Box ();
     scatterplot.Grid ();
     scatterplot.XTicks ();
     scatterplot.YTicks ();
-    scatterplot.Text (
-            Point (minx + (maxx - minx) / 2.0, miny + (maxy - miny) / 2.0), 
-            "Some Text");
     scatterplot.Update ();
+
+    histogram.Clear ();
+    histogram.Plot (data);
+    histogram.Box ();
+    histogram.Update ();
 
     /*
     PIT = xs.begin (), PEND = xs.end ();

@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <cstdio>
 #include <cmath>
 
@@ -46,7 +47,7 @@ void ScatterPlot::XTicks () const {
     FloatType xmax = xdomain_.High ();
     FloatType ymin = ydomain_.Low ();
     FloatType off = par.font_px;
-    ALLEGRO_COLOR col = mkcol (255, 255, 255, 255);
+    ColorType col = mkcol (255, 255, 255, 255);
 
     for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
         al_draw_textf (par.font, col, 
@@ -66,7 +67,7 @@ void ScatterPlot::YTicks () const {
     FloatType ymin = ydomain_.Low ();
     FloatType xoff = par.font_px;
     FloatType yoff = par.font_px * 0.5;
-    ALLEGRO_COLOR col = mkcol (255, 255, 255, 255);
+    ColorType col = mkcol (255, 255, 255, 255);
 
     for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
         al_draw_textf (par.font, col, 
@@ -85,7 +86,7 @@ void BasicPlot::Grid () const {
               ymax = view_.YRange ().High ();
     FloatType xmin = view_.XRange ().Low (),
               ymin = view_.YRange ().Low ();
-    ALLEGRO_COLOR col = mkcol (192, 192, 192, 30);
+    ColorType col = mkcol (192, 192, 192, 30);
 
     for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
         al_draw_line (x, ymin, x, ymax, col, 1);
@@ -105,8 +106,8 @@ void BasicPlot::YTicks () const {
     throw NotImplemented ("BasicPlot::YTicks");
 }
 
-void BasicPlot::Points (const std::vector< Point >&) {
-    throw NotImplemented ("BasicPlot::Points");
+void BasicPlot::Plot (const Dataset&) {
+    throw NotImplemented ("BasicPlot::Plot");
 }
 
 void BasicPlot::Lines (const std::vector< Line >&) {
@@ -119,7 +120,7 @@ void BasicPlot::Text (const Point&, const std::string&) {
 
 void ScatterPlot::Text (const Point& at, const std::string& text) {
     /* TODO: Load font according to Par () cex ? */
-    ALLEGRO_COLOR col = mkcol (255, 255, 255, 255);
+    ColorType col = mkcol (255, 255, 255, 255);
     al_draw_textf (Par ().font, col, 
             transform (at.X (), XDomain (), XRange ()), 
             transform (at.Y (), YDomain (), YRange ()), 
@@ -135,14 +136,14 @@ void ScatterPlot::Ylim (FloatType ymin, FloatType ymax) {
     ydomain_.Reset (ymin, ymax);
 }
 
-void ScatterPlot::Points (const std::vector< Point >& points) {
-    std::vector< Point >::const_iterator PIT = points.begin (),
-        PEND = points.end ();
+void ScatterPlot::Plot (const Dataset& data) {
+    Dataset::const_iterator DIT = data.Begin (),
+        DEND = data.End ();
 
-    for (; PIT != PEND; ++PIT) {
+    for (; DIT != DEND; ++DIT) {
         /* transform from dataset domain to plot range */
-        FloatType x = transform (PIT->X (), XDomain (), XRange ());
-        FloatType y = transform (PIT->Y (), YDomain (), YRange ());
+        FloatType x = transform (DIT->X (), XDomain (), XRange ());
+        FloatType y = transform (DIT->Y (), YDomain (), YRange ());
         al_draw_filled_circle (x, y, 1.0, Par ().col);
     }
 }
@@ -166,3 +167,59 @@ void ScatterPlot::Lines (const std::vector< Line >& lines) {
     }
 }
 
+void HistogramPlot::YTicks () const {
+    /*
+    Parameters par = Par();
+    FloatType ystride = ydomain_.Distance () / par.yticks;
+    FloatType ymax = ydomain_.High ();
+    FloatType xmin = xdomain_.Low ();
+    FloatType ymin = ydomain_.Low ();
+    FloatType xoff = par.font_px;
+    FloatType yoff = par.font_px * 0.5;
+    ColorType col = mkcol (255, 255, 255, 255);
+
+    for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
+        al_draw_textf (par.font, col, 
+                transform (xmin, XDomain (), XRange ()) - xoff, 
+                transform (y, YDomain (), YRange ()) - yoff, 
+                ALIGN_RIGHT, 
+                "%ld", static_cast< long >(floor (y)));
+    }
+    */
+}
+
+void HistogramPlot::Plot (const Dataset& data) {
+
+    Dataset::const_iterator DIT = data.Begin (),
+        DEND = data.End ();
+
+    int nbins = Par ().nbins;
+    Range ydomain (0.0, 1.0), xdomain (0.0, nbins);
+    FloatType lowx = data.XDomain ().Low ();
+    FloatType bin_width = data.XDomain ().Distance () / nbins;
+    std::vector< long > bins(nbins);
+    long bin_max = 0;
+    ColorType col = mkcol (0, 0, 0, 255);
+
+    for (; DIT != DEND; ++DIT) {
+        int bin = static_cast< int >(floor ((DIT->X () - lowx) / bin_width));
+        if (bin == nbins) { --bin; }
+        bins[bin]++;
+        bin_max = std::max (bin_max, bins[bin]);
+    }
+
+    ydomain.Reset (0.0, 
+            1.10 * (static_cast< FloatType >(bin_max) / 
+                static_cast< FloatType >(data.Size ())));
+    
+    for (int n = 0; n < nbins; ++n) {
+        FloatType x1 = transform (n, xdomain, XRange ());
+        FloatType x2 = transform (n + 1, xdomain, XRange ());
+        FloatType ratio = static_cast< FloatType >(bins[n]) / 
+            static_cast< FloatType >(data.Size ());
+        FloatType y1 = transform (0.0, ydomain, YRange ());
+        FloatType y2 = transform (ratio, ydomain, YRange ());
+        al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);
+        al_draw_rectangle (x1, y1, x2, y2, col, 1.0);
+    }
+}

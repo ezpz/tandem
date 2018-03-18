@@ -8,6 +8,7 @@
 #include <graph/exceptions.h>
 #include <graph/range.h>
 #include <graph/types.h>
+#include <graph/dataset.h>
 
 class ViewPort {
 
@@ -71,7 +72,7 @@ public:
     virtual void XTicks () const;
     virtual void YTicks () const;
 
-    virtual void Points (const std::vector< Point >& points);
+    virtual void Plot (const Dataset& data);
     virtual void Lines (const std::vector< Line >& points);
     virtual void Text (const Point& at, const std::string& text);
     
@@ -97,13 +98,25 @@ public:
     void XTicks () const;
     void YTicks () const;
 
-    void Points (const std::vector< Point >& points);
+    void Plot (const Dataset& data);
     void Lines (const std::vector< Line >& lines);
     void Text (const Point& at, const std::string& text);
 
 };
 
-class Histogram : public BasicPlot {
+class HistogramPlot : public BasicPlot {
+
+    HistogramPlot ();
+    HistogramPlot (const HistogramPlot&);
+
+public:
+
+    HistogramPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
+
+    void YTicks () const;
+
+    void Plot (const Dataset& data);
+
 };
 
 #endif /*PLOT_H__*/
