@@ -9,6 +9,11 @@ class Range {
 
     FloatType x_, y_, low_, high_;
 
+    /*
+     * equality of float types within an epsilon tolerance
+     */
+    bool MostlyEqual (FloatType a, FloatType b) const;
+
 public:
 
     Range () : x_(0.0), y_(0.0), low_(0.0), high_(0.0) {}
@@ -23,9 +28,7 @@ public:
 
     void Reset (FloatType x, FloatType y);
 
-    inline bool Contains (const FloatType& x) const {
-        return (Low () <= x) && (x <= High ());
-    }
+    bool Contains (const FloatType& x) const;
 
 };
 

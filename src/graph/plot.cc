@@ -219,6 +219,24 @@ void ScatterPlot::Plot (const Dataset& data, const Parameters& par) {
 
 void HistogramPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
 void HistogramPlot::Plot (const Dataset& data, const Parameters& par) {
+    switch (par.side) {
+        case SIDE_BOTTOM:
+            HistBottom (data, par);
+            break;
+        case SIDE_TOP:
+            HistTop (data, par);
+            break;
+        case SIDE_RIGHT:
+            HistRight (data, par);
+            break;
+        case SIDE_LEFT:
+            HistLeft (data, par);
+            break;
+    }
+}
+
+#include <limits>
+void HistogramPlot::HistBottom (const Dataset& data, const Parameters& par) {
 
     Dataset::const_iterator DIT = data.Begin (),
         DEND = data.End ();
@@ -236,14 +254,14 @@ void HistogramPlot::Plot (const Dataset& data, const Parameters& par) {
 
     for (; DIT != DEND; ++DIT) {
         int bin = static_cast< int >(floor ((DIT->X () - lowx) / bin_width));
-        /* anything on the border gets placed in the last bin */
+        /* anything on the border gets placed in the final bin */
         if (bin == nbins) { --bin; }
         bins[bin]++;
         bin_max = std::max (bin_max, bins[bin]);
     }
 
     for (int n = 0; n < nbins; ++n) {
-        FloatType a = n * bin_width, b = (n + 1) * bin_width;
+        FloatType a = lowx + n * bin_width, b = lowx + (n + 1) * bin_width;
         /* Only if the results fit in the selected xlimits */
         if (xdomain.Contains (a) && xdomain.Contains (b)) {
             FloatType x1 = transform (a, xdomain, XRange ());
@@ -258,3 +276,52 @@ void HistogramPlot::Plot (const Dataset& data, const Parameters& par) {
         }
     }
 }
+
+void HistogramPlot::HistRight (const Dataset& data, const Parameters& par) {
+
+    Dataset::const_iterator DIT = data.Begin (),
+        DEND = data.End ();
+
+    int nbins = par.nbins;
+    const Range& xdomain = par.xdomain;
+    const Range& ydomain = par.ydomain;
+    FloatType lowy = data.YDomain ().Low ();
+    FloatType bin_width = data.YDomain ().Distance () / nbins;
+    std::vector< long > bins(nbins);
+    long bin_max = 0;
+    ColorType col = mkcol (0, 0, 0, 255);
+
+    GrabFocus ();
+
+    for (; DIT != DEND; ++DIT) {
+        int bin = static_cast< int >(floor ((DIT->Y () - lowy) / bin_width));
+        /* anything on the border gets placed in the final bin */
+        if (bin == nbins) { --bin; }
+        bins[bin]++;
+        bin_max = std::max (bin_max, bins[bin]);
+    }
+
+    for (int n = 0; n < nbins; ++n) {
+        FloatType a = lowy + n * bin_width, b = lowy + (n + 1) * bin_width;
+        /* Only if the results fit in the selected ylimits */
+        if (ydomain.Contains (a) && ydomain.Contains (b)) {
+            FloatType ratio = static_cast< FloatType >(bins[n]) / 
+                static_cast< FloatType >(data.Size ());
+            FloatType x1 = transform (xdomain.High () - ratio, 
+                    xdomain, XRange ());
+            FloatType x2 = transform (xdomain.High (), xdomain, XRange ());
+            FloatType y1 = transform (a, ydomain, YRange ());
+            FloatType y2 = transform (b, ydomain, YRange ());
+            al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);
+            /* TODO: only draw border if option is enabled */
+            al_draw_rectangle (x1, y1, x2, y2, col, 1.0);
+        }
+    }
+}
+
+void HistogramPlot::HistTop (const Dataset&, const Parameters&) {
+}
+
+void HistogramPlot::HistLeft (const Dataset&, const Parameters&) {
+}
+

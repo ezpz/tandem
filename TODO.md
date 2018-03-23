@@ -1,5 +1,6 @@
 ### Next Steps
 - [ ] Move each display to it's own thread
+- [ ] Locking mechanisms for multiple threads grabbing the shared display
 - [ ] Rectangular selection highlights points
 - [ ] Events processed using 0MQ
 - [ ] Multiple views supported in corner plot (switch via command/meta-key)

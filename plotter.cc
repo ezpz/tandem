@@ -131,11 +131,8 @@ int main (int argc, char **argv) {
             monitor_y - screen_y);
 
     ScatterPlot scatterplot(screens[1]); 
-    HistogramPlot histogram(screens[0]);
-    /*
-             plot_bottom(screens[2]), 
-             plot_both(screens[1]);
-     */
+    HistogramPlot top_hist(screens[0]);
+    HistogramPlot bottom_hist(screens[2]);
 
     std::vector< Point > xs;
     load (csv, xs);
@@ -153,8 +150,10 @@ int main (int argc, char **argv) {
 
     scatterplot.Xlim (minx, maxx);
     scatterplot.Ylim (miny, maxy);
-    histogram.Xlim (minx, maxx);
-    histogram.Ylim (0, 1.0);
+    top_hist.Xlim (minx, maxx);
+    top_hist.Ylim (0, 1.0);
+    bottom_hist.Xlim (0, 1.0);
+    bottom_hist.Ylim (miny, maxy);
 
     events = al_create_event_queue ();
     if (NULL == events) {
@@ -171,11 +170,6 @@ int main (int argc, char **argv) {
 
 
     /*
-    Parameters o = Parameters::Defaults ();
-    scatterplot.Grid (o);
-    */
-
-    /*
      * FIXME: This should happen on every event in the system
      * capturing changes from the user.
      */
@@ -187,11 +181,19 @@ int main (int argc, char **argv) {
     scatterplot.YTicks ();
     scatterplot.Update ();
 
-    histogram.Clear ();
-    histogram.Box ();
-    histogram.YTicks ();
-    histogram.Plot (data);
-    histogram.Update ();
+    top_hist.Clear ();
+    top_hist.Box ();
+    top_hist.YTicks ();
+    top_hist.Plot (data);
+    top_hist.Update ();
+
+    bottom_hist.Clear ();
+    bottom_hist.Box ();
+    bottom_hist.YTicks ();
+    Parameters par(bottom_hist.Par ());
+    par.side = SIDE_RIGHT;
+    bottom_hist.Plot (data, par);
+    bottom_hist.Update ();
 
     while (true) {
 

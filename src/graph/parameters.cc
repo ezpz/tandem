@@ -34,6 +34,8 @@ void Parameters::Reset () {
     oma.top = 7.0;
     oma.right = 2.0;
 
+    side = SIDE_BOTTOM;
+
     xticks = 7;
     yticks = 5;
 

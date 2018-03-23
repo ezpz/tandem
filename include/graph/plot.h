@@ -119,6 +119,11 @@ class HistogramPlot : public BasicPlot {
     HistogramPlot ();
     HistogramPlot (const HistogramPlot&);
 
+    void HistBottom (const Dataset& data, const Parameters& par);
+    void HistLeft (const Dataset& data, const Parameters& par);
+    void HistRight (const Dataset& data, const Parameters& par);
+    void HistTop (const Dataset& data, const Parameters& par);
+
 public:
 
     HistogramPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}

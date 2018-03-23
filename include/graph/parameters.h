@@ -35,6 +35,8 @@ struct Parameters {
     int                 yticks;     /* number of tick marks on y axis */
     int                 align;      /* text alignment */
     int                 nbins;      /* number of histogram bins */
+    
+    Orientation         side;       /* which side of the plot */
 
     Range               xdomain;    /* The x domain of the dataset values */
     Range               ydomain;    /* The y domain of the dataset values */
