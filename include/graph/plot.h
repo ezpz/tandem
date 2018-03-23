@@ -78,6 +78,12 @@ public:
     void Box () const;
     void Box (const Parameters& par) const;
 
+    void XGrid () const;
+    void XGrid (const Parameters& par) const;
+
+    void YGrid () const;
+    void YGrid (const Parameters& par) const;
+
     void Grid () const;
     void Grid (const Parameters& par) const;
     

@@ -61,14 +61,14 @@ void BasicPlot::Box (const Parameters& par) const {
             par.col, par.lwd);
 }
 
-void BasicPlot::Grid () const { Grid (Par ()); }
-void BasicPlot::Grid (const Parameters& par) const {
-    FloatType xstride = view_.XRange ().Distance () / par.xticks,
-              ystride = view_.YRange ().Distance () / par.yticks;
+void BasicPlot::XGrid () const { XGrid (Par ()); }
+void BasicPlot::XGrid (const Parameters& par) const { 
+    FloatType xstride = view_.XRange ().Distance () / par.xticks;
     FloatType xmax = view_.XRange ().High (),
               ymax = view_.YRange ().High ();
     FloatType xmin = view_.XRange ().Low (),
               ymin = view_.YRange ().Low ();
+    /* TODO: make configurable */
     ColorType col = mkcol (192, 192, 192, 30);
 
     GrabFocus ();
@@ -77,9 +77,29 @@ void BasicPlot::Grid (const Parameters& par) const {
         al_draw_line (x, ymin, x, ymax, col, 1);
     }
 
+}
+
+void BasicPlot::YGrid () const { YGrid (Par ()); }
+void BasicPlot::YGrid (const Parameters& par) const { 
+    FloatType ystride = view_.YRange ().Distance () / par.yticks;
+    FloatType xmax = view_.XRange ().High (),
+              ymax = view_.YRange ().High ();
+    FloatType xmin = view_.XRange ().Low (),
+              ymin = view_.YRange ().Low ();
+    /* TODO: make configurable */
+    ColorType col = mkcol (192, 192, 192, 30);
+
+    GrabFocus ();
+
     for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
         al_draw_line (xmin, y, xmax, y, col, 1);
     }
+}
+
+void BasicPlot::Grid () const { Grid (Par ()); }
+void BasicPlot::Grid (const Parameters& par) const {
+    XGrid (par);
+    YGrid (par);
 }
 
 void BasicPlot::Lines (const std::vector< Line >& lines) const { 
@@ -123,15 +143,17 @@ void BasicPlot::XTicks (const Parameters& par) const {
     const Range& ydomain = par.ydomain;
 
     FloatType xstride = xdomain.Distance () / par.xticks;
-    FloatType xmin = xdomain.Low ();
-    FloatType xmax = xdomain.High ();
+    FloatType a = xdomain.X ();
+    FloatType b = xdomain.Y ();
     FloatType ymin = ydomain.Low ();
     FloatType off = par.font_px;
     ColorType col = mkcol (255, 255, 255, 255);
 
+    if (a > b) { std::swap (a, b); }
+
     GrabFocus ();
 
-    for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
+    for (FloatType x = a + xstride; x < b; x += xstride) {
         char txt[16] = {0};
         if (xstride < 1.0) {
             snprintf (txt, 16, "%0.2f", x);
@@ -243,7 +265,6 @@ void HistogramPlot::HistBottom (const Dataset& data, const Parameters& par) {
 
     int nbins = par.nbins;
     const Range& xdomain = par.xdomain;
-    const Range& ydomain = par.ydomain;
     FloatType lowx = data.XDomain ().Low ();
     FloatType bin_width = data.XDomain ().Distance () / nbins;
     std::vector< long > bins(nbins);
@@ -259,6 +280,19 @@ void HistogramPlot::HistBottom (const Dataset& data, const Parameters& par) {
         bins[bin]++;
         bin_max = std::max (bin_max, bins[bin]);
     }
+
+    /* TODO: 
+     * FIXME:
+     * Ignore any passed in ydomain and fix it to the bounds of
+     * calculated values. This should check for 'default' vs. 'user-
+     * supplied' parameters
+     */
+    Parameters p(Par ());
+    p.SetYDomain (0.0, 
+            1.10 * (static_cast< FloatType >(bin_max) /
+                static_cast< FloatType >(data.Size ())));
+    Par(p);
+    const Range& ydomain = p.ydomain;
 
     for (int n = 0; n < nbins; ++n) {
         FloatType a = lowx + n * bin_width, b = lowx + (n + 1) * bin_width;
@@ -283,7 +317,6 @@ void HistogramPlot::HistRight (const Dataset& data, const Parameters& par) {
         DEND = data.End ();
 
     int nbins = par.nbins;
-    const Range& xdomain = par.xdomain;
     const Range& ydomain = par.ydomain;
     FloatType lowy = data.YDomain ().Low ();
     FloatType bin_width = data.YDomain ().Distance () / nbins;
@@ -301,15 +334,26 @@ void HistogramPlot::HistRight (const Dataset& data, const Parameters& par) {
         bin_max = std::max (bin_max, bins[bin]);
     }
 
+    /* TODO: 
+     * FIXME:
+     * Ignore any passed in xdomain and fix it to the bounds of
+     * calculated values. This should check for 'default' vs. 'user-
+     * supplied' parameters
+     */
+    Parameters p(Par ());
+    p.SetXDomain (1.10 * (static_cast< FloatType >(bin_max) /
+                static_cast< FloatType >(data.Size ())), 0.0);
+    Par(p);
+    const Range& xdomain = p.xdomain;
+
     for (int n = 0; n < nbins; ++n) {
         FloatType a = lowy + n * bin_width, b = lowy + (n + 1) * bin_width;
         /* Only if the results fit in the selected ylimits */
         if (ydomain.Contains (a) && ydomain.Contains (b)) {
             FloatType ratio = static_cast< FloatType >(bins[n]) / 
                 static_cast< FloatType >(data.Size ());
-            FloatType x1 = transform (xdomain.High () - ratio, 
-                    xdomain, XRange ());
-            FloatType x2 = transform (xdomain.High (), xdomain, XRange ());
+            FloatType x1 = transform (ratio, xdomain, XRange ());
+            FloatType x2 = transform (0.0, xdomain, XRange ());
             FloatType y1 = transform (a, ydomain, YRange ());
             FloatType y2 = transform (b, ydomain, YRange ());
             al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);

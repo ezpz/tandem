@@ -152,7 +152,7 @@ int main (int argc, char **argv) {
     scatterplot.Ylim (miny, maxy);
     top_hist.Xlim (minx, maxx);
     top_hist.Ylim (0, 1.0);
-    bottom_hist.Xlim (0, 1.0);
+    bottom_hist.Xlim (1.0, 0);
     bottom_hist.Ylim (miny, maxy);
 
     events = al_create_event_queue ();
@@ -174,25 +174,29 @@ int main (int argc, char **argv) {
      * capturing changes from the user.
      */
     scatterplot.Clear ();
-    scatterplot.Box ();
     scatterplot.Grid ();
     scatterplot.Plot (data);
     scatterplot.XTicks ();
     scatterplot.YTicks ();
+    scatterplot.Box ();
     scatterplot.Update ();
 
     top_hist.Clear ();
-    top_hist.Box ();
+    Parameters p (top_hist.Par ());
+    p.nbins = 100;
+    top_hist.Plot (data, p);
     top_hist.YTicks ();
-    top_hist.Plot (data);
+    top_hist.YGrid ();
+    top_hist.Box ();
     top_hist.Update ();
 
     bottom_hist.Clear ();
-    bottom_hist.Box ();
-    bottom_hist.YTicks ();
     Parameters par(bottom_hist.Par ());
     par.side = SIDE_RIGHT;
     bottom_hist.Plot (data, par);
+    bottom_hist.XTicks ();
+    bottom_hist.XGrid ();
+    bottom_hist.Box ();
     bottom_hist.Update ();
 
     while (true) {

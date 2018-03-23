@@ -10,6 +10,8 @@
 - [ ] Make cindent normalization script
 - [ ] Collect aspect ratio of screen when creating plots
 - [ ] Better tick mark placement algorithm
+- [ ] How to handle axes on hostogram plots
+- [ ] Devise a way to determine 'unset' vs. 'user specified' parameters
 - [x] Histogram view doesnt include other views (only the histogram)
 - [x] Dataset structure instead of passing around a vector (with Range, etc.)
 - [x] General text drawing
