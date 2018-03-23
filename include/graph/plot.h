@@ -41,16 +41,19 @@ class BasicPlot {
     BasicPlot ();
     BasicPlot (const BasicPlot&);
 
+    FloatType DisplayWidth () const { return al_get_display_width (win_); }
+    FloatType DisplayHeight () const { return al_get_display_height (win_); }
+
+    bool Selected () const;
+
     void Initialize ();
 
 protected:
 
     ALLEGRO_DISPLAY* Display () const { return win_; }
-    FloatType DisplayWidth () const { return al_get_display_width (win_); }
-    FloatType DisplayHeight () const { return al_get_display_height (win_); }
-    const Parameters& Par () const { return par_; }
     const Range& XRange () const { return view_.XRange (); }
     const Range& YRange () const { return view_.YRange (); }
+    void GrabFocus () const;
 
 public:
 
@@ -63,24 +66,40 @@ public:
 
     ~BasicPlot () {}
 
-    void GrabFocus () const;
+    const Parameters& Par () const { return par_; }
+    void Par (const Parameters& par);
+
+    void Xlim (FloatType low, FloatType high);
+    void Ylim (FloatType low, FloatType high);
+
     void Update () const;
+    void Clear () const;
 
-    virtual void Clear () const;
-    virtual void Box () const;
-    virtual void Grid () const;
-    virtual void XTicks () const;
-    virtual void YTicks () const;
+    void Box () const;
+    void Box (const Parameters& par) const;
 
-    virtual void Plot (const Dataset& data);
-    virtual void Lines (const std::vector< Line >& points);
-    virtual void Text (const Point& at, const std::string& text);
+    void Grid () const;
+    void Grid (const Parameters& par) const;
     
+    void XTicks () const;
+    void XTicks (const Parameters& par) const;
+
+    void YTicks () const;
+    void YTicks (const Parameters& par) const;
+
+    void Lines (const std::vector< Line >& lines) const;
+    void Lines (const std::vector< Line >& lines, const Parameters& par) const;
+
+    void Text (const Point& at, const std::string& text) const;
+    void Text (const Point& at, const std::string& text, 
+            const Parameters& par) const;
+    
+    virtual void Plot (const Dataset& data) = 0;
+    virtual void Plot (const Dataset& data, const Parameters& par) = 0;
 };
 
-class ScatterPlot : public BasicPlot {
 
-    Range xdomain_, ydomain_;
+class ScatterPlot : public BasicPlot {
 
     ScatterPlot ();
     ScatterPlot (const ScatterPlot&);
@@ -89,20 +108,11 @@ public:
 
     ScatterPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
 
-    inline const Range& XDomain () const { return xdomain_; }
-    inline const Range& YDomain () const { return ydomain_; }
-
-    void Xlim (FloatType low, FloatType high);
-    void Ylim (FloatType low, FloatType high);
-
-    void XTicks () const;
-    void YTicks () const;
-
     void Plot (const Dataset& data);
-    void Lines (const std::vector< Line >& lines);
-    void Text (const Point& at, const std::string& text);
+    void Plot (const Dataset& data, const Parameters& par);
 
 };
+
 
 class HistogramPlot : public BasicPlot {
 
@@ -113,9 +123,8 @@ public:
 
     HistogramPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
 
-    void YTicks () const;
-
     void Plot (const Dataset& data);
+    void Plot (const Dataset& data, const Parameters& par);
 
 };
 

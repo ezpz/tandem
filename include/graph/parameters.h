@@ -28,6 +28,7 @@ struct Parameters {
     ALLEGRO_COLOR       sfill;      /* fill color for selection */
     FloatType           lwd;        /* line width */
     FloatType           cex;        /* expansion factor for points/text */
+    FloatType           rad;        /* radius of points */
     ALLEGRO_FONT        *font;      /* default font */
     FloatType           font_px;    /* height of font in px */
     int                 xticks;     /* number of tick marks on x axis */
@@ -35,10 +36,18 @@ struct Parameters {
     int                 align;      /* text alignment */
     int                 nbins;      /* number of histogram bins */
 
+    Range               xdomain;    /* The x domain of the dataset values */
+    Range               ydomain;    /* The y domain of the dataset values */
+
     Margin              oma;        /* outer margins */
 
     /* Reset all default values */
     void Reset ();
+
+    void SetXDomain (FloatType low, FloatType high);
+    void SetYDomain (FloatType low, FloatType high);
+
+    void LoadFont (FloatType cex);
     
     Parameters () { Reset (); }
 

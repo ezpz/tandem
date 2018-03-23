@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cmath>
+#include <cfloat>
 #include <graph/util.h>
 
 ColorType mkcol (int r, int g, int b, int alpha) {
@@ -8,6 +10,88 @@ ColorType mkcol (int r, int g, int b, int alpha) {
     FloatType fa = static_cast< FloatType >(alpha) / 255.0;
     return al_map_rgba_f (fr * fa, fg * fa, fb * fa, fa);
 }
+
+/*
+ * Borrowed most of the below for the R code to do the same
+ */
+std::vector< FloatType > prettyTicks (const Range& range, int ndiv) {
+    FloatType low = range.Low (), high = range.High ();
+    FloatType dx = high - low;
+    FloatType shrink_sml = 0.25;
+    FloatType rounding_eps = 1e-10;
+    FloatType h = 0.8, h5 = 1.7;
+    FloatType cell = 0.0, u = 0.0, base = 0.0, unit = 0.0, ns = 0.0, nu = 0.0;
+    FloatType dist = 0.0, step = 0.0;
+    bool i_small = false;
+    int min_n = 1;
+
+    if (0 == dx && 0 == high) {
+        cell = 1.0;
+        i_small = true;
+    } else {
+        cell = std::max (std::fabs (low), std::fabs (high));
+        u = 1 + ((h5 >= 1.5 * h + 0.5) ? 1.0 / (1 + h) : 1.5 / (1 + h5));
+        u *= std::max (1.0, static_cast< FloatType >(ndiv)) * FT_EPSILON;
+        i_small = dx < cell * u * 3.0;
+    }
+
+    if (i_small) {
+        if (cell > 10.0) {
+            cell = 9.0 + cell / 10.0;
+        }
+        cell *= shrink_sml;
+        if (min_n > 1) {
+            cell /= min_n;
+        }
+    } else {
+        cell = dx;
+        if (ndiv > 1) {
+            cell /= ndiv;
+        }
+    }
+
+    if (cell < 20 * FT_MIN) {
+        cell = 20 * FT_MIN;
+    } else if (cell * 10 > FT_MAX) {
+        cell = 0.1 * FT_MAX;
+    }
+
+    base = std::pow (10.0, floor (log10 (cell)));
+    unit = base;
+
+    u = 2 * base;
+    if (u - cell < h * (cell - unit)) {
+        unit = u;
+        u = 5 * base;
+        if (u - cell < h5 * (cell - unit)) {
+            unit = u;
+            u = 10 * base;
+            if (u - cell < h * (cell - unit)) {
+                unit = u;
+            }
+        }
+    }
+
+    ns = floor (low / unit + rounding_eps);
+    nu = ceil (high / unit - rounding_eps);
+
+    while (ns * unit > low + rounding_eps * unit) {
+        ns -= 1;
+    }
+
+    while (nu * unit < high - rounding_eps * unit) {
+        nu += 1;
+    }
+
+    std::vector< FloatType > xs;
+    dist = nu - ns;
+    step = dist / ndiv;
+    for (int i = 0; i < ndiv; ++i) {
+        xs.push_back (low + step * i);
+    }
+    return xs;
+}
+
 
 Line lineclip (const Range& xlim, const Range& ylim, const Line& line) {
 

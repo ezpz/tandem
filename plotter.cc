@@ -153,14 +153,8 @@ int main (int argc, char **argv) {
 
     scatterplot.Xlim (minx, maxx);
     scatterplot.Ylim (miny, maxy);
-
-
-    /*
-    plot_bottom.SetXlim (xlim);
-    plot_bottom.SetYlim (ylim);
-    plot_both.SetYlim (ylim);
-    plot_both.SetXlim (xlim);
-    */
+    histogram.Xlim (minx, maxx);
+    histogram.Ylim (0, 1.0);
 
     events = al_create_event_queue ();
     if (NULL == events) {
@@ -186,26 +180,18 @@ int main (int argc, char **argv) {
      * capturing changes from the user.
      */
     scatterplot.Clear ();
-    scatterplot.Plot (data);
     scatterplot.Box ();
     scatterplot.Grid ();
+    scatterplot.Plot (data);
     scatterplot.XTicks ();
     scatterplot.YTicks ();
     scatterplot.Update ();
 
     histogram.Clear ();
-    histogram.Plot (data);
     histogram.Box ();
+    histogram.YTicks ();
+    histogram.Plot (data);
     histogram.Update ();
-
-    /*
-    PIT = xs.begin (), PEND = xs.end ();
-    for (; PIT != PEND; ++PIT) {
-        scatterplot.DrawPoint (*PIT, o);
-        plot_bottom.DrawPoint (*PIT, o);
-        plot_both.DrawPoint (*PIT, o);
-    }
-    */
 
     while (true) {
 

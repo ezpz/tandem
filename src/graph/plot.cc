@@ -18,15 +18,23 @@ void BasicPlot::Initialize () {
 }
 
 void BasicPlot::GrabFocus () const {
-    if (win_ != al_get_current_display ()) {
+    if (Display () != al_get_current_display ()) {
         al_set_target_bitmap (al_get_backbuffer (Display ()));
     }
 }
 
+bool BasicPlot::Selected () const {
+    return Display () == al_get_current_display ();
+}
+
 void BasicPlot::Clear () const {
-    GrabFocus ();
-    /* TODO: make this color configrable */
-    al_clear_to_color (al_map_rgb (0, 0, 0));
+    /* TODO: make these colors configrable */
+    if (Selected ()) {
+        al_clear_to_color (al_map_rgb (20, 20, 20));
+    } else {
+        GrabFocus ();
+        al_clear_to_color (al_map_rgb (0, 0, 0));
+    }
 }
 
 void BasicPlot::Update () const {
@@ -34,59 +42,36 @@ void BasicPlot::Update () const {
     al_flip_display ();
 }
 
-void BasicPlot::Box () const {
+void BasicPlot::Par (const Parameters& par) {
+    /*
+     * Changing the parameters may mean that the range/domain could have
+     * changed for the plot. 
+     * TODO: handle the resetting of parameters according to those changes
+     */
+    par_ = par;
+}
+
+void BasicPlot::Box () const { Box (Par ()); }
+void BasicPlot::Box (const Parameters& par) const {
+
+    GrabFocus ();
+
     al_draw_rectangle (view_.XRange ().Low (), view_.YRange ().Low (),
             view_.XRange ().High (), view_.YRange ().High (), 
-            par_.col, par_.lwd);
+            par.col, par.lwd);
 }
 
-void ScatterPlot::XTicks () const {
-    Parameters par = Par();
-    FloatType xstride = xdomain_.Distance () / par.xticks;
-    FloatType xmin = xdomain_.Low ();
-    FloatType xmax = xdomain_.High ();
-    FloatType ymin = ydomain_.Low ();
-    FloatType off = par.font_px;
-    ColorType col = mkcol (255, 255, 255, 255);
-
-    for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
-        al_draw_textf (par.font, col, 
-                transform (x, XDomain (), XRange ()), 
-                transform (ymin, YDomain (), YRange ()) + off, 
-                ALIGN_CENTER, 
-                "%ld", static_cast< long >(floor (x)));
-    }
-
-}
-
-void ScatterPlot::YTicks () const {
-    Parameters par = Par();
-    FloatType ystride = ydomain_.Distance () / par.yticks;
-    FloatType ymax = ydomain_.High ();
-    FloatType xmin = xdomain_.Low ();
-    FloatType ymin = ydomain_.Low ();
-    FloatType xoff = par.font_px;
-    FloatType yoff = par.font_px * 0.5;
-    ColorType col = mkcol (255, 255, 255, 255);
-
-    for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
-        al_draw_textf (par.font, col, 
-                transform (xmin, XDomain (), XRange ()) - xoff, 
-                transform (y, YDomain (), YRange ()) - yoff, 
-                ALIGN_RIGHT, 
-                "%ld", static_cast< long >(floor (y)));
-    }
-
-}
-
-void BasicPlot::Grid () const {
-    FloatType xstride = view_.XRange ().Distance () / par_.xticks,
-              ystride = view_.YRange ().Distance () / par_.yticks;
+void BasicPlot::Grid () const { Grid (Par ()); }
+void BasicPlot::Grid (const Parameters& par) const {
+    FloatType xstride = view_.XRange ().Distance () / par.xticks,
+              ystride = view_.YRange ().Distance () / par.yticks;
     FloatType xmax = view_.XRange ().High (),
               ymax = view_.YRange ().High ();
     FloatType xmin = view_.XRange ().Low (),
               ymin = view_.YRange ().Low ();
     ColorType col = mkcol (192, 192, 192, 30);
+
+    GrabFocus ();
 
     for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
         al_draw_line (x, ymin, x, ymax, col, 1);
@@ -95,131 +80,181 @@ void BasicPlot::Grid () const {
     for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
         al_draw_line (xmin, y, xmax, y, col, 1);
     }
-
 }
 
-void BasicPlot::XTicks () const {
-    throw NotImplemented ("BasicPlot::XTicks");
+void BasicPlot::Lines (const std::vector< Line >& lines) const { 
+    Lines (lines, Par ()); 
 }
+void BasicPlot::Lines (const std::vector< Line >& lines, 
+        const Parameters& par) const {
 
-void BasicPlot::YTicks () const {
-    throw NotImplemented ("BasicPlot::YTicks");
-}
-
-void BasicPlot::Plot (const Dataset&) {
-    throw NotImplemented ("BasicPlot::Plot");
-}
-
-void BasicPlot::Lines (const std::vector< Line >&) {
-    throw NotImplemented ("BasicPlot::Lines");
-}
-
-void BasicPlot::Text (const Point&, const std::string&) {
-    throw NotImplemented ("BasicPlot::Text");
-}
-
-void ScatterPlot::Text (const Point& at, const std::string& text) {
-    /* TODO: Load font according to Par () cex ? */
-    ColorType col = mkcol (255, 255, 255, 255);
-    al_draw_textf (Par ().font, col, 
-            transform (at.X (), XDomain (), XRange ()), 
-            transform (at.Y (), YDomain (), YRange ()), 
-            ALIGN_LEFT, 
-            "%s", text.c_str ());
-}
-
-void ScatterPlot::Xlim (FloatType xmin, FloatType xmax) {
-    xdomain_.Reset (xmin, xmax);
-}
-
-void ScatterPlot::Ylim (FloatType ymin, FloatType ymax) {
-    ydomain_.Reset (ymin, ymax);
-}
-
-void ScatterPlot::Plot (const Dataset& data) {
-    Dataset::const_iterator DIT = data.Begin (),
-        DEND = data.End ();
-
-    for (; DIT != DEND; ++DIT) {
-        /* transform from dataset domain to plot range */
-        FloatType x = transform (DIT->X (), XDomain (), XRange ());
-        FloatType y = transform (DIT->Y (), YDomain (), YRange ());
-        al_draw_filled_circle (x, y, 1.0, Par ().col);
-    }
-}
-
-void ScatterPlot::Lines (const std::vector< Line >& lines) {
     std::vector< Line >::const_iterator LIT = lines.begin (),
         LEND = lines.end ();
 
+    GrabFocus ();
+
     for (; LIT != LEND; ++LIT) {
         /* transform from dataset domain to plot range */
-        Line clipped = lineclip (XDomain (), YDomain (), *LIT);
+        Line clipped = lineclip (par.xdomain, par.ydomain, *LIT);
         FloatType x1 = transform (clipped.Start ().X (), 
-                XDomain (), XRange ());
+                par.xdomain, XRange ());
         FloatType y1 = transform (clipped.Start ().Y (), 
-                YDomain (), YRange ());
+                par.ydomain, YRange ());
         FloatType x2 = transform (clipped.End ().X (), 
-                XDomain (), XRange ());
+                par.xdomain, XRange ());
         FloatType y2 = transform (clipped.End ().Y (), 
-                YDomain (), YRange ());
+                par.ydomain, YRange ());
         al_draw_line (x1, y1, x2, y2, Par ().col, Par ().lwd);
     }
 }
 
-void HistogramPlot::YTicks () const {
-    /*
-    Parameters par = Par();
-    FloatType ystride = ydomain_.Distance () / par.yticks;
-    FloatType ymax = ydomain_.High ();
-    FloatType xmin = xdomain_.Low ();
-    FloatType ymin = ydomain_.Low ();
+void BasicPlot::Xlim (FloatType xmin, FloatType xmax) {
+    par_.SetXDomain (xmin, xmax);
+}
+
+void BasicPlot::Ylim (FloatType ymin, FloatType ymax) {
+    par_.SetYDomain (ymin, ymax);
+}
+
+void BasicPlot::XTicks () const { XTicks (Par ()); }
+void BasicPlot::XTicks (const Parameters& par) const {
+
+    const Range& xdomain = par.xdomain;
+    const Range& ydomain = par.ydomain;
+
+    FloatType xstride = xdomain.Distance () / par.xticks;
+    FloatType xmin = xdomain.Low ();
+    FloatType xmax = xdomain.High ();
+    FloatType ymin = ydomain.Low ();
+    FloatType off = par.font_px;
+    ColorType col = mkcol (255, 255, 255, 255);
+
+    GrabFocus ();
+
+    for (FloatType x = xmin + xstride; x < xmax; x += xstride) {
+        char txt[16] = {0};
+        if (xstride < 1.0) {
+            snprintf (txt, 16, "%0.2f", x);
+        } else {
+            snprintf (txt, 16, "%ld", static_cast< long >(floor (x)));
+        }
+
+        al_draw_textf (par.font, col, 
+                transform (x, xdomain, XRange ()), 
+                transform (ymin, ydomain, YRange ()) + off, 
+                ALIGN_CENTER, 
+                "%s", txt);
+    }
+}
+
+void BasicPlot::YTicks () const { YTicks (Par ()); }
+void BasicPlot::YTicks (const Parameters& par) const {
+
+    const Range &ydomain = par.ydomain;
+    const Range &xdomain = par.xdomain;
+
+    FloatType ystride = ydomain.Distance () / par.yticks;
+    FloatType ymax = ydomain.High ();
+    FloatType xmin = xdomain.Low ();
+    FloatType ymin = ydomain.Low ();
     FloatType xoff = par.font_px;
     FloatType yoff = par.font_px * 0.5;
     ColorType col = mkcol (255, 255, 255, 255);
 
+    GrabFocus ();
+
     for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
+        char txt[16] = {0};
+        if (ystride < 1.0) {
+            snprintf (txt, 16, "%0.2f", y);
+        } else {
+            snprintf (txt, 16, "%ld", static_cast< long >(floor (y)));
+        }
+
         al_draw_textf (par.font, col, 
-                transform (xmin, XDomain (), XRange ()) - xoff, 
-                transform (y, YDomain (), YRange ()) - yoff, 
+                transform (xmin, xdomain, XRange ()) - xoff, 
+                transform (y, ydomain, YRange ()) - yoff, 
                 ALIGN_RIGHT, 
-                "%ld", static_cast< long >(floor (y)));
+                "%s", txt);
     }
-    */
 }
 
-void HistogramPlot::Plot (const Dataset& data) {
+void BasicPlot::Text (const Point& at, const std::string& text) const { 
+    Text (at, text, Par ()); 
+}
+void BasicPlot::Text (const Point& at, const std::string& text, 
+        const Parameters& par) const { 
+
+    ColorType col = mkcol (255, 255, 255, 255);
+
+    GrabFocus ();
+
+    al_draw_textf (par.font, col, 
+            transform (at.X (), par.xdomain, XRange ()), 
+            transform (at.Y (), par.ydomain, YRange ()), 
+            ALIGN_LEFT, 
+            "%s", text.c_str ());
+}
+
+void ScatterPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
+void ScatterPlot::Plot (const Dataset& data, const Parameters& par) {
+    Dataset::const_iterator DIT = data.Begin (),
+        DEND = data.End ();
+
+    GrabFocus ();
+
+    for (; DIT != DEND; ++DIT) {
+        /* transform from dataset domain to plot range */
+        FloatType x = transform (DIT->X (), par.xdomain, XRange ());
+        FloatType y = transform (DIT->Y (), par.ydomain, YRange ());
+        if (XRange ().Contains (x) && YRange ().Contains (y)) {
+            if (par.cex < 1.0) {
+                al_draw_pixel (x, y, par.col);
+            } else {
+                al_draw_circle (x, y, par.cex * par.rad, par.col, par.lwd);
+            }
+        }
+    }
+}
+
+void HistogramPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
+void HistogramPlot::Plot (const Dataset& data, const Parameters& par) {
 
     Dataset::const_iterator DIT = data.Begin (),
         DEND = data.End ();
 
-    int nbins = Par ().nbins;
-    Range ydomain (0.0, 1.0), xdomain (0.0, nbins);
+    int nbins = par.nbins;
+    const Range& xdomain = par.xdomain;
+    const Range& ydomain = par.ydomain;
     FloatType lowx = data.XDomain ().Low ();
     FloatType bin_width = data.XDomain ().Distance () / nbins;
     std::vector< long > bins(nbins);
     long bin_max = 0;
     ColorType col = mkcol (0, 0, 0, 255);
 
+    GrabFocus ();
+
     for (; DIT != DEND; ++DIT) {
         int bin = static_cast< int >(floor ((DIT->X () - lowx) / bin_width));
+        /* anything on the border gets placed in the last bin */
         if (bin == nbins) { --bin; }
         bins[bin]++;
         bin_max = std::max (bin_max, bins[bin]);
     }
 
-    ydomain.Reset (0.0, 
-            1.10 * (static_cast< FloatType >(bin_max) / 
-                static_cast< FloatType >(data.Size ())));
-    
     for (int n = 0; n < nbins; ++n) {
-        FloatType x1 = transform (n, xdomain, XRange ());
-        FloatType x2 = transform (n + 1, xdomain, XRange ());
-        FloatType ratio = static_cast< FloatType >(bins[n]) / 
-            static_cast< FloatType >(data.Size ());
-        FloatType y1 = transform (0.0, ydomain, YRange ());
-        FloatType y2 = transform (ratio, ydomain, YRange ());
-        al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);
-        al_draw_rectangle (x1, y1, x2, y2, col, 1.0);
+        FloatType a = n * bin_width, b = (n + 1) * bin_width;
+        /* Only if the results fit in the selected xlimits */
+        if (xdomain.Contains (a) && xdomain.Contains (b)) {
+            FloatType x1 = transform (a, xdomain, XRange ());
+            FloatType x2 = transform (b, xdomain, XRange ());
+            FloatType ratio = static_cast< FloatType >(bins[n]) / 
+                static_cast< FloatType >(data.Size ());
+            FloatType y1 = transform (0.0, ydomain, YRange ());
+            FloatType y2 = transform (ratio, ydomain, YRange ());
+            al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);
+            /* TODO: only draw border if option is enabled */
+            al_draw_rectangle (x1, y1, x2, y2, col, 1.0);
+        }
     }
 }
