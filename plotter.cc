@@ -169,6 +169,7 @@ int main (int argc, char **argv) {
     al_register_event_source (events, al_get_mouse_event_source ());
 
 
+    Parameters par;
     /*
      * FIXME: This should happen on every event in the system
      * capturing changes from the user.
@@ -182,16 +183,16 @@ int main (int argc, char **argv) {
     scatterplot.Update ();
 
     top_hist.Clear ();
-    Parameters p (top_hist.Par ());
-    p.nbins = 100;
-    top_hist.Plot (data, p);
+    par = top_hist.Par ();
+    par.nbins = 100;
+    top_hist.Plot (data, par);
     top_hist.YTicks ();
     top_hist.YGrid ();
     top_hist.Box ();
     top_hist.Update ();
 
     bottom_hist.Clear ();
-    Parameters par(bottom_hist.Par ());
+    par = bottom_hist.Par ();
     par.side = SIDE_RIGHT;
     bottom_hist.Plot (data, par);
     bottom_hist.XTicks ();

@@ -10,7 +10,7 @@
 - [ ] Make cindent normalization script
 - [ ] Collect aspect ratio of screen when creating plots
 - [ ] Better tick mark placement algorithm
-- [ ] How to handle axes on hostogram plots
+- [x] How to handle axes on hostogram plots
 - [ ] Devise a way to determine 'unset' vs. 'user specified' parameters
 - [x] Histogram view doesnt include other views (only the histogram)
 - [x] Dataset structure instead of passing around a vector (with Range, etc.)
@@ -23,8 +23,12 @@
 
 ### Types of views in corner display
 - [ ] Median with std dev circles around selected points
-- [ ] Histogram (x-axis/y-axis option)
+- [x] Histogram (x-axis/y-axis option)
 - [ ] Correlation
+- [ ] boxplot
+- [ ] heatmap (standard binning)
+- [ ] heatmap (various binning - hexagon, circle, ...)
+- [ ] Histogram with color indicating quartiles
 
 ### Thoughts or nice-to-haves
 - [ ] Regression/unit test support; integrated with build

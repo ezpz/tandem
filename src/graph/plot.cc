@@ -241,6 +241,13 @@ void ScatterPlot::Plot (const Dataset& data, const Parameters& par) {
 
 void HistogramPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
 void HistogramPlot::Plot (const Dataset& data, const Parameters& par) {
+    /*
+     * TODO: The only difference between TOP/BOTTOM or LEFT/RIGHT
+     * is the Range settings. Roll up the common parts here (i.e.
+     * iterating over the dataset and finding the bin values and 
+     * ratio) then pass the results onto a common method to handle
+     * the plotting
+     */
     switch (par.side) {
         case SIDE_BOTTOM:
             HistBottom (data, par);
@@ -363,9 +370,108 @@ void HistogramPlot::HistRight (const Dataset& data, const Parameters& par) {
     }
 }
 
-void HistogramPlot::HistTop (const Dataset&, const Parameters&) {
+void HistogramPlot::HistTop (const Dataset& data, const Parameters& par) {
+
+    Dataset::const_iterator DIT = data.Begin (),
+        DEND = data.End ();
+
+    int nbins = par.nbins;
+    const Range& xdomain = par.xdomain;
+    FloatType lowx = data.XDomain ().Low ();
+    FloatType bin_width = data.XDomain ().Distance () / nbins;
+    std::vector< long > bins(nbins);
+    long bin_max = 0;
+    ColorType col = mkcol (0, 0, 0, 255);
+
+    GrabFocus ();
+
+    for (; DIT != DEND; ++DIT) {
+        int bin = static_cast< int >(floor ((DIT->X () - lowx) / bin_width));
+        /* anything on the border gets placed in the final bin */
+        if (bin == nbins) { --bin; }
+        bins[bin]++;
+        bin_max = std::max (bin_max, bins[bin]);
+    }
+
+    /* TODO: 
+     * FIXME:
+     * Ignore any passed in ydomain and fix it to the bounds of
+     * calculated values. This should check for 'default' vs. 'user-
+     * supplied' parameters
+     */
+    Parameters p(Par ());
+    p.SetYDomain (1.10 * (static_cast< FloatType >(bin_max) /
+                static_cast< FloatType >(data.Size ())), 0.0);
+    Par(p);
+    const Range& ydomain = p.ydomain;
+
+    for (int n = 0; n < nbins; ++n) {
+        FloatType a = lowx + n * bin_width, b = lowx + (n + 1) * bin_width;
+        /* Only if the results fit in the selected xlimits */
+        if (xdomain.Contains (a) && xdomain.Contains (b)) {
+            FloatType x1 = transform (a, xdomain, XRange ());
+            FloatType x2 = transform (b, xdomain, XRange ());
+            FloatType ratio = static_cast< FloatType >(bins[n]) / 
+                static_cast< FloatType >(data.Size ());
+            FloatType y1 = transform (0.0, ydomain, YRange ());
+            FloatType y2 = transform (ratio, ydomain, YRange ());
+            al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);
+            /* TODO: only draw border if option is enabled */
+            al_draw_rectangle (x1, y1, x2, y2, col, 1.0);
+        }
+    }
 }
 
-void HistogramPlot::HistLeft (const Dataset&, const Parameters&) {
+void HistogramPlot::HistLeft (const Dataset& data, const Parameters& par) {
+
+    Dataset::const_iterator DIT = data.Begin (),
+        DEND = data.End ();
+
+    int nbins = par.nbins;
+    const Range& ydomain = par.ydomain;
+    FloatType lowy = data.YDomain ().Low ();
+    FloatType bin_width = data.YDomain ().Distance () / nbins;
+    std::vector< long > bins(nbins);
+    long bin_max = 0;
+    ColorType col = mkcol (0, 0, 0, 255);
+
+    GrabFocus ();
+
+    for (; DIT != DEND; ++DIT) {
+        int bin = static_cast< int >(floor ((DIT->Y () - lowy) / bin_width));
+        /* anything on the border gets placed in the final bin */
+        if (bin == nbins) { --bin; }
+        bins[bin]++;
+        bin_max = std::max (bin_max, bins[bin]);
+    }
+
+    /* TODO: 
+     * FIXME:
+     * Ignore any passed in xdomain and fix it to the bounds of
+     * calculated values. This should check for 'default' vs. 'user-
+     * supplied' parameters
+     */
+    Parameters p(Par ());
+    p.SetXDomain (0.0, 
+            1.10 * (static_cast< FloatType >(bin_max) /
+                static_cast< FloatType >(data.Size ())));
+    Par(p);
+    const Range& xdomain = p.xdomain;
+
+    for (int n = 0; n < nbins; ++n) {
+        FloatType a = lowy + n * bin_width, b = lowy + (n + 1) * bin_width;
+        /* Only if the results fit in the selected ylimits */
+        if (ydomain.Contains (a) && ydomain.Contains (b)) {
+            FloatType ratio = static_cast< FloatType >(bins[n]) / 
+                static_cast< FloatType >(data.Size ());
+            FloatType x1 = transform (ratio, xdomain, XRange ());
+            FloatType x2 = transform (0.0, xdomain, XRange ());
+            FloatType y1 = transform (a, ydomain, YRange ());
+            FloatType y2 = transform (b, ydomain, YRange ());
+            al_draw_filled_rectangle (x1, y1, x2, y2, Par ().sfill);
+            /* TODO: only draw border if option is enabled */
+            al_draw_rectangle (x1, y1, x2, y2, col, 1.0);
+        }
+    }
 }
 
