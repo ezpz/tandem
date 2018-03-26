@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <graph/types.h>
 #include <graph/range.h>
+#include <graph/util.h>
 
 struct GeneralException : public std::exception {
     std::string msg_;
@@ -19,6 +20,19 @@ struct GeneralException : public std::exception {
         msg_ = std::string(buff);
     }
     virtual ~GeneralException () throw () {}
+    virtual const char *what () const throw () { return msg_.c_str (); }
+
+};
+
+struct InvalidOrientation : public std::exception {
+    std::string msg_;
+    InvalidOrientation (const char *msg, Orientation o) :
+        std::exception() {
+        char buff[512] = {0};
+        snprintf (buff, 512, "Invalid orientation: %s:%s", msg, orientation2str (o));
+        msg_ = std::string(buff);
+    }
+    virtual ~InvalidOrientation () throw () {}
     virtual const char *what () const throw () { return msg_.c_str (); }
 
 };

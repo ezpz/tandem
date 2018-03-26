@@ -10,7 +10,7 @@ LIBS = $(BASE_LIBS) $(ALLEGRO_LIBS)
 
 INC = -I./include 
 
-DIRS = src src/graph
+DIRS = src src/graph src/dataset
 SRCS = $(wildcard $(DIRS:=/*.cc))
 OBJS = $(patsubst %.cc,%.o,$(SRCS))
 

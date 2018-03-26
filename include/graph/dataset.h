@@ -41,6 +41,14 @@ public:
         ydomain_.Reset (ymin, ymax);
     }
 
+    void XData (std::vector< FloatType >& dest) const;
+    void YData (std::vector< FloatType >& dest) const;
+
+    /* 
+     * TODO: This should resize range dynamically or a method
+     * should be exposed to do it prior to the next plot
+     * That or just remove this call
+     */
     void Add (const Point& p) { points_.push_back (p); }
     size_type Size () const { return points_.size (); }
 

@@ -11,6 +11,19 @@ ColorType mkcol (int r, int g, int b, int alpha) {
     return al_map_rgba_f (fr * fa, fg * fa, fb * fa, fa);
 }
 
+const char * orientation2str (Orientation o) {
+    switch (o) {
+        case SIDE_BOTTOM: return "SIDE_BOTTOM";
+        case SIDE_TOP: return "SIDE_TOP";
+        case SIDE_LEFT: return "SIDE_LEFT";
+        case SIDE_RIGHT: return "SIDE_RIGHT";
+        case HORIZONTAL: return "HORIZONTAL";
+        case VERTICAL: return "VERTICAL";
+        default: return "MISSING ORIENTATION CASE";
+    }
+    return "ORIENTATION SWITCH FAIL";
+}
+
 /*
  * Borrowed most of the below for the R code to do the same
  */

@@ -6,6 +6,7 @@
 #include <graph/plot.h>
 #include <graph/util.h>
 #include <graph/exceptions.h>
+#include <dataset/summary.h>
 
 void BasicPlot::Initialize () {
     FloatType off_left = par_.oma.left * par_.font_px,
@@ -261,10 +262,11 @@ void HistogramPlot::Plot (const Dataset& data, const Parameters& par) {
         case SIDE_LEFT:
             HistLeft (data, par);
             break;
+        default:
+            throw InvalidOrientation ("HistogramPlot::Plot", par.side);
     }
 }
 
-#include <limits>
 void HistogramPlot::HistBottom (const Dataset& data, const Parameters& par) {
 
     Dataset::const_iterator DIT = data.Begin (),
@@ -474,4 +476,112 @@ void HistogramPlot::HistLeft (const Dataset& data, const Parameters& par) {
         }
     }
 }
+
+void BoxPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
+void BoxPlot::Plot (const Dataset& data, const Parameters& par) {
+
+    switch (par.side) {
+        case VERTICAL:
+            Vertical (data, par);
+            break;
+        case HORIZONTAL:
+            Horizontal (data, par);
+            break;
+        default:
+            throw InvalidOrientation ("HistogramPlot::Plot", par.side);
+    }
+}
+
+void BoxPlot::Vertical (const Dataset& data, const Parameters& par) {
+
+    std::vector< FloatType > ys;
+
+    data.YData (ys);
+    BoxPlotSummary bp(ys);
+
+    /*
+     * Center on the viewport x-axis and have data dictate where
+     * the boxplot boundary is on the yaxis
+     */
+    FloatType clx = XRange ().Low () + XRange ().Distance () / 2.0;
+    FloatType boxwidth = XRange ().Distance () / 20.0;
+
+    FloatType m = transform (bp.Median (), data.YDomain (), YRange ()),
+              uq = transform (bp.UpperQ (), data.YDomain (), YRange ()),
+              lq = transform (bp.LowerQ (), data.YDomain (), YRange ());
+
+    FloatType x1 = clx - boxwidth, x2 = clx + boxwidth;
+
+    GrabFocus ();
+
+    al_draw_rectangle (x1, lq, x2, uq, par.col, 2.0);
+
+    /* 
+     * cant use BasicPlot::Lines as they are specified in the input domain
+     * and our x values here are in viewport coordinates
+     */
+    al_draw_line (x1, m, x2,  m, par.col, 1.0);
+
+    FloatType y = transform (bp.LowerBound (), par.ydomain, YRange ());
+    al_draw_line (clx, y, clx, lq, par.col, 1.0);
+    y = transform (bp.UpperBound (), par.ydomain, YRange ());
+    al_draw_line (clx, uq, clx, y, par.col, 1.0);
+
+    /* Plot outliers */
+    std::vector< FloatType >::const_iterator FIT = ys.begin (), 
+        FEND = ys.end ();
+    for (; FIT != FEND; ++FIT) {
+        if (bp.Outlier (*FIT)) {
+            y = transform (*FIT, par.ydomain, YRange ());
+            al_draw_circle (clx, y, 1.5 * par.rad, par.col, par.lwd);
+        }
+    }
+}
+
+void BoxPlot::Horizontal (const Dataset& data, const Parameters& par) {
+
+    std::vector< FloatType > xs;
+
+    data.XData (xs);
+    BoxPlotSummary bp(xs);
+
+    /*
+     * Center on the viewport y-axis and have data dictate where
+     * the boxplot boundary is on the xaxis
+     */
+    FloatType cly = YRange ().Low () + YRange ().Distance () / 2.0;
+    FloatType boxheight = YRange ().Distance () / 20.0;
+
+    FloatType m = transform (bp.Median (), par.xdomain, XRange ()),
+              uq = transform (bp.UpperQ (), par.xdomain, XRange ()),
+              lq = transform (bp.LowerQ (), par.xdomain, XRange ());
+
+    FloatType y1 = cly - boxheight, y2 = cly + boxheight;
+
+    GrabFocus ();
+
+    al_draw_rectangle (lq, y1, uq, y2, par.col, 2.0);
+
+    /* 
+     * cant use BasicPlot::Lines as they are specified in the input domain
+     * and our y values here are in viewport coordinates
+     */
+    al_draw_line (m, y1, m, y2, par.col, 1.0);
+
+    FloatType x = transform (bp.LowerBound (), par.xdomain, XRange ());
+    al_draw_line (x, cly, lq, cly, par.col, 1.0);
+    x = transform (bp.UpperBound (), par.xdomain, XRange ());
+    al_draw_line (uq, cly, x, cly, par.col, 1.0);
+
+    /* Plot outliers */
+    std::vector< FloatType >::const_iterator FIT = xs.begin (), 
+        FEND = xs.end ();
+    for (; FIT != FEND; ++FIT) {
+        if (bp.Outlier (*FIT)) {
+            x = transform (*FIT, par.xdomain, XRange ());
+            al_draw_circle (x, cly, 1.5 * par.rad, par.col, par.lwd);
+        }
+    }
+}
+
 

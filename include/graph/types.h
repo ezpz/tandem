@@ -12,7 +12,9 @@ enum Orientation {
     SIDE_BOTTOM = 0,
     SIDE_LEFT,
     SIDE_TOP,
-    SIDE_RIGHT
+    SIDE_RIGHT,
+    VERTICAL,
+    HORIZONTAL
 };
 
 #ifdef USE_FLOAT

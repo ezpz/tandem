@@ -139,4 +139,22 @@ public:
 
 };
 
+class BoxPlot : public BasicPlot {
+
+    BoxPlot ();
+    BoxPlot (const ScatterPlot&);
+
+    void Horizontal (const Dataset& data, const Parameters& par);
+    void Vertical (const Dataset& data, const Parameters& par);
+
+public:
+
+    BoxPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
+
+    void Plot (const Dataset& data);
+    void Plot (const Dataset& data, const Parameters& par);
+
+};
+
+
 #endif /*PLOT_H__*/
