@@ -2,6 +2,7 @@
 #define SUMMARY_H__
 
 #include <vector>
+#include <algorithm>
 #include <graph/types.h> /* TODO: move to top-level include */
 
 class BoxPlotSummary {
@@ -21,8 +22,13 @@ public:
     FloatType Max () const { return max_; }
     FloatType Min () const { return min_; }
 
-    inline FloatType LowerBound () const { return lq_ - (1.5 * qrange_); }
-    inline FloatType UpperBound () const { return uq_ + (1.5 * qrange_); }
+    inline FloatType LowerBound () const { 
+        return std::max (Min (), lq_ - (1.5 * qrange_));
+    }
+    
+    inline FloatType UpperBound () const { 
+        return std::min (Max (), uq_ + (1.5 * qrange_));
+    }
 
     inline bool Outlier (FloatType x) const {
         return (x < LowerBound () || x > UpperBound ());

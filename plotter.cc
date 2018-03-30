@@ -155,8 +155,6 @@ int main (int argc, char **argv) {
     miny -= data.YDomain ().Distance () * 0.05;
     maxy += data.YDomain ().Distance () * 0.05;
 
-    fprintf (stderr, "MAIN xmin:%0.2f xmax:%0.2f\n", minx, maxx);
-
     scatterplot.Xlim (minx, maxx);
     scatterplot.Ylim (miny, maxy);
     top_hist.Xlim (minx, maxx);
@@ -193,11 +191,12 @@ int main (int argc, char **argv) {
 
     top_hist.Clear ();
     par = top_hist.Par ();
-    par.side = VERTICAL;
+    par.side = HORIZONTAL;
     top_hist.Plot (data, par);
     top_hist.XTicks ();
-    top_hist.YTicks ();
-    top_hist.YGrid ();
+    top_hist.XGrid ();
+    //top_hist.YTicks ();
+    //top_hist.YGrid ();
     top_hist.Box ();
     top_hist.Update ();
 
