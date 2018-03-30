@@ -64,7 +64,7 @@ public:
         Initialize ();
     }
 
-    ~BasicPlot () {}
+    virtual ~BasicPlot () {}
 
     const Parameters& Par () const { return par_; }
     void Par (const Parameters& par);

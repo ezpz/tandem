@@ -27,7 +27,7 @@
 - [x] Read in dataset from command line (dynamically setting ranges)
 
 ### Types of views in corner display
-- [ ] Median with std dev circles around selected points
+- [ ] Mean/Median with std dev circles around selected points
 - [ ] Correlation
 - [ ] Line plot (line-and-point plot)
 - [ ] cumulative distribution plot
@@ -42,4 +42,5 @@
 - [ ] Dotted lines for grid
 - [ ] Dynamically resize plot area
 - [ ] Command line interface (i.e. 'language')
+- [ ] Notion of a 'selected' plot with altered bg color
 - [x] Non-scatterplot views in upper/lower plots
