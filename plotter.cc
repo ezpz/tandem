@@ -26,6 +26,144 @@ enum button_state {
     BUTTON_UP
 };
 
+/* TODO: Make this better. simple struct with a 'Next' interface? something */
+#define PLOT_SCATTER   0
+#define PLOT_BOX_H     1
+#define PLOT_BOX_V     2
+#define PLOT_HIST_L    3
+#define PLOT_HIST_R    4
+#define PLOT_HIST_B    5
+#define PLOT_HIST_T    6
+#define PLOT_HEXBIN    7
+#define MAX_PLOT       8
+
+void change_plot (BasicPlot **plots, int *plot_type, 
+        ALLEGRO_DISPLAY **screens, ALLEGRO_DISPLAY *source, Dataset& data,
+        FloatType minx, FloatType maxx, FloatType miny, FloatType maxy) {
+    int i = -1;
+    if (source == screens[0]) { i = 0; }
+    else if (source == screens[1]) { i = 1; }
+    else if (source == screens[2]) { i = 2; }
+
+    if (-1 == i) {
+        return;
+    }
+
+    Parameters par;
+    int old_type = plot_type[i];
+    int new_type = (old_type + 1) % MAX_PLOT;
+    plot_type[i] = new_type;
+
+    delete plots[i];
+
+    switch (new_type) {
+        case PLOT_SCATTER:
+            plots[i] = new ScatterPlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            plots[i]->Grid ();
+            plots[i]->Plot (data);
+            plots[i]->XTicks ();
+            plots[i]->YTicks ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_BOX_H:
+            plots[i] = new BoxPlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            par = plots[i]->Par ();
+            par.side = HORIZONTAL;
+            plots[i]->Plot (data, par);
+            plots[i]->XTicks ();
+            plots[i]->XGrid ();
+            //plots[i]->YTicks ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_BOX_V:
+            plots[i] = new BoxPlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            par = plots[i]->Par ();
+            par.side = VERTICAL;
+            plots[i]->Plot (data, par);
+            plots[i]->YTicks ();
+            plots[i]->YGrid ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_HIST_L:
+            plots[i] = new HistogramPlot (screens[i]);
+            plots[i]->Xlim (0.0, 1.0);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            par = plots[i]->Par ();
+            par.side = SIDE_LEFT;
+            plots[i]->Plot (data, par);
+            plots[i]->XTicks ();
+            plots[i]->XGrid ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_HIST_R:
+            plots[i] = new HistogramPlot (screens[i]);
+            plots[i]->Xlim (1.0, 0.0);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            par = plots[i]->Par ();
+            par.side = SIDE_RIGHT;
+            plots[i]->Plot (data, par);
+            plots[i]->XTicks ();
+            plots[i]->XGrid ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_HIST_B:
+            plots[i] = new HistogramPlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (1.0, 0.0);
+            plots[i]->Clear ();
+            par = plots[i]->Par ();
+            par.side = SIDE_TOP;
+            plots[i]->Plot (data, par);
+            plots[i]->YTicks ();
+            plots[i]->YGrid ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_HIST_T:
+            plots[i] = new HistogramPlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (0, 1.0);
+            plots[i]->Clear ();
+            par = plots[i]->Par ();
+            par.side = SIDE_BOTTOM;
+            plots[i]->Plot (data, par);
+            plots[i]->YTicks ();
+            plots[i]->YGrid ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_HEXBIN:
+            plots[i] = new HexBinPlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            plots[i]->Plot (data);
+            plots[i]->YTicks ();
+            plots[i]->XTicks ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        default:
+            throw GeneralException("Unknown plot type", __FILE__, __LINE__);
+    }
+}
+
 void load (const char *csv, std::vector< Point > &pts) {
     FILE *fin = fopen (csv, "rb");
     if (NULL == fin) { return; }
@@ -65,6 +203,9 @@ int main (int argc, char **argv) {
     int monitor_x = 0, monitor_y = 0, screen_x = 0, screen_y = 0;
     FloatType minx = 0, miny = 0, maxx = 0, maxy = 0;
     const char *csv = NULL;
+    int plot_type[3] = {0};
+    BasicPlot *plots[3] = {0};
+
     /*
     button_state bstate = BUTTON_UP;
     */
@@ -130,12 +271,6 @@ int main (int argc, char **argv) {
     al_set_window_position (screens[2], monitor_x - 2 * screen_x, 
             monitor_y - screen_y);
 
-    ScatterPlot scatterplot(screens[1]); 
-    //HistogramPlot top_hist(screens[0]);
-    BoxPlot top_hist(screens[0]);
-    //HistogramPlot bottom_hist(screens[2]);
-    HexBinPlot bottom_hist(screens[2]);
-
     std::vector< Point > xs;
     load (csv, xs);
     Dataset data(xs);
@@ -156,13 +291,21 @@ int main (int argc, char **argv) {
     miny -= data.YDomain ().Distance () * 0.05;
     maxy += data.YDomain ().Distance () * 0.05;
 
-    scatterplot.Xlim (minx, maxx);
-    scatterplot.Ylim (miny, maxy);
-    top_hist.Xlim (minx, maxx);
-    top_hist.Ylim (miny, maxy);
-    //bottom_hist.Xlim (1.0, 0);
-    bottom_hist.Xlim (minx, maxx);
-    bottom_hist.Ylim (miny, maxy);
+    for (int j = 0; j < 3; ++j) {
+        plots[j] = new ScatterPlot (screens[j]);
+        if (NULL == plots[j]) {
+            throw GeneralException ("Memory error", __FILE__, __LINE__);
+        }
+        plots[j]->Xlim (minx, maxx);
+        plots[j]->Ylim (miny, maxy);
+        plots[j]->Clear ();
+        plots[j]->Grid ();
+        plots[j]->Plot (data);
+        plots[j]->YTicks ();
+        plots[j]->XTicks ();
+        plots[j]->Box ();
+        plots[j]->Update ();
+    }
 
     events = al_create_event_queue ();
     if (NULL == events) {
@@ -178,41 +321,10 @@ int main (int argc, char **argv) {
     al_register_event_source (events, al_get_mouse_event_source ());
 
 
-    Parameters par;
     /*
      * FIXME: This should happen on every event in the system
      * capturing changes from the user.
      */
-    scatterplot.Clear ();
-    scatterplot.Grid ();
-    scatterplot.Plot (data);
-    scatterplot.XTicks ();
-    scatterplot.YTicks ();
-    scatterplot.Box ();
-
-    scatterplot.Update ();
-
-    top_hist.Clear ();
-    par = top_hist.Par ();
-    par.side = HORIZONTAL;
-    top_hist.Plot (data, par);
-    top_hist.XTicks ();
-    top_hist.XGrid ();
-    //top_hist.YTicks ();
-    //top_hist.YGrid ();
-    top_hist.Box ();
-    top_hist.Update ();
-
-    bottom_hist.Clear ();
-    //par = bottom_hist.Par ();
-    //par.side = SIDE_RIGHT;
-    //bottom_hist.Plot (data, par);
-    bottom_hist.Plot (data);
-    bottom_hist.XTicks ();
-    bottom_hist.YTicks ();
-    //bottom_hist.XGrid ();
-    bottom_hist.Box ();
-    bottom_hist.Update ();
 
     while (true) {
 
@@ -291,6 +403,11 @@ next_event:
             case ALLEGRO_EVENT_KEY_DOWN:
                 if (ALLEGRO_KEY_ESCAPE == event.keyboard.keycode) {
                     goto outly;
+                }
+                if (ALLEGRO_KEY_N == event.keyboard.keycode) {
+                    change_plot (plots, plot_type, screens, 
+                            event.keyboard.display, 
+                            data, minx, maxx, miny, maxy);
                 }
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:

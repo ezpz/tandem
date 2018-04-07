@@ -3,7 +3,6 @@
 - [ ] Locking mechanisms for multiple threads grabbing the shared display
 - [ ] Rectangular selection highlights points
 - [ ] Events processed using 0MQ
-- [ ] Multiple views supported in corner plot (switch via command/meta-key)
 - [ ] Plot titles (general annotations: xlabel, ylabel, etc.)
 - [ ] Move dataset/routines (median, mean, ...) to src/data, include/data
 - [ ] Top and left plots in unison
@@ -15,6 +14,7 @@
 - [ ] Handle single value data sets properly
 - [ ] Better categories in the TODO list (maybe with priorities)
 - [ ] Devise a way to determine 'unset' vs. 'user specified' parameters
+- [x] Multiple views supported in corner plot (switch via command/meta-key)
 - [x] Better edge cases (e.g. plot with single point)
 - [x] How to handle axes on hostogram plots
 - [x] Histogram view doesnt include other views (only the histogram)
@@ -32,7 +32,7 @@
 - [ ] Line plot (line-and-point plot)
 - [ ] cumulative distribution plot
 - [ ] heatmap (standard binning)
-- [ ] heatmap (various binning - hexagon, circle, ...)
+- [ ] heatmap (various binning - ~~hexagon~~, circle, ...)
 - [ ] Histogram with color indicating quartiles
 - [x] Hexagon plot
 - [x] Histogram (x-axis/y-axis option)
