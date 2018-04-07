@@ -142,7 +142,7 @@ public:
 class BoxPlot : public BasicPlot {
 
     BoxPlot ();
-    BoxPlot (const ScatterPlot&);
+    BoxPlot (const BoxPlot&);
 
     void Horizontal (const Dataset& data, const Parameters& par);
     void Vertical (const Dataset& data, const Parameters& par);
@@ -150,6 +150,23 @@ class BoxPlot : public BasicPlot {
 public:
 
     BoxPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
+
+    void Plot (const Dataset& data);
+    void Plot (const Dataset& data, const Parameters& par);
+
+};
+
+class HexBinPlot : public BasicPlot {
+
+    HexBinPlot ();
+    HexBinPlot (const HexBinPlot&);
+
+    enum RangeType { RANGE_X, RANGE_Y };
+    bool AllValid (const std::vector< FloatType >& xs, RangeType which);
+
+public:
+
+    HexBinPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
 
     void Plot (const Dataset& data);
     void Plot (const Dataset& data, const Parameters& par);

@@ -23,9 +23,9 @@ struct Margin {
 
 struct Parameters {
 
-    ALLEGRO_COLOR       col;        /* default point/line color */
-    ALLEGRO_COLOR       fill;       /* default fill color */
-    ALLEGRO_COLOR       sfill;      /* fill color for selection */
+    ColorType           col;        /* default point/line color */
+    ColorType           fill;       /* default fill color */
+    ColorType           sfill;      /* fill color for selection */
     FloatType           lwd;        /* line width */
     FloatType           cex;        /* expansion factor for points/text */
     FloatType           rad;        /* radius of points */

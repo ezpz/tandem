@@ -8,6 +8,13 @@
 #include <graph/primitives.h>
 
 ColorType mkcol (int r, int g, int b, int alpha);
+
+/* 
+ * Select a color along the spectrum between two other colors
+ * [amnt] is a value between 0.0 (c1) and 1.0 (c2)
+ */
+ColorType gradient (ColorType c1, ColorType c2, FloatType amnt);
+
 Line lineclip (const Range& xlim, const Range& ylim, const Line& line);
 std::vector< FloatType > prettyTicks (const Range& range, int ndiv);
 const char * orientation2str (Orientation o);

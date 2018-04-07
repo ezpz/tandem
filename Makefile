@@ -2,9 +2,9 @@
 default: all
 
 FLAGS = -W -Wall -Wextra -Werror
-FLAGS += -ggdb
+FLAGS += -ggdb -std=c++11
 
-BASE_LIBS = -lm
+BASE_LIBS = -lm -lzmq
 ALLEGRO_LIBS = -lallegro -lallegro_primitives -lallegro_font -lallegro_ttf
 LIBS = $(BASE_LIBS) $(ALLEGRO_LIBS)
 

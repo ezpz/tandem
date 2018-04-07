@@ -34,6 +34,7 @@
 - [ ] heatmap (standard binning)
 - [ ] heatmap (various binning - hexagon, circle, ...)
 - [ ] Histogram with color indicating quartiles
+- [x] Hexagon plot
 - [x] Histogram (x-axis/y-axis option)
 - [x] boxplot
 

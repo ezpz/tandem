@@ -11,6 +11,24 @@ ColorType mkcol (int r, int g, int b, int alpha) {
     return al_map_rgba_f (fr * fa, fg * fa, fb * fa, fa);
 }
 
+ColorType gradient (ColorType c1, ColorType c2, FloatType amnt) {
+    FloatType rstep = (c1.r - c2.r) / 100.0;
+    FloatType gstep = (c1.g - c2.g) / 100.0;
+    FloatType bstep = (c1.b - c2.b) / 100.0;
+    FloatType astep = (c1.a - c2.a) / 100.0;
+    ColorType c;
+
+    if (amnt < 0.0) { amnt = 0.0; }
+    if (amnt > 1.0) { amnt = 1.0; }
+
+    c.r = c1.r - (amnt * 100.0 * rstep);
+    c.g = c1.g - (amnt * 100.0 * gstep);
+    c.b = c1.b - (amnt * 100.0 * bstep);
+    c.a = c1.a - (amnt * 100.0 * astep);
+
+    return c;
+}
+
 const char * orientation2str (Orientation o) {
     switch (o) {
         case SIDE_BOTTOM: return "SIDE_BOTTOM";

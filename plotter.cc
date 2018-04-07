@@ -133,7 +133,8 @@ int main (int argc, char **argv) {
     ScatterPlot scatterplot(screens[1]); 
     //HistogramPlot top_hist(screens[0]);
     BoxPlot top_hist(screens[0]);
-    HistogramPlot bottom_hist(screens[2]);
+    //HistogramPlot bottom_hist(screens[2]);
+    HexBinPlot bottom_hist(screens[2]);
 
     std::vector< Point > xs;
     load (csv, xs);
@@ -159,7 +160,8 @@ int main (int argc, char **argv) {
     scatterplot.Ylim (miny, maxy);
     top_hist.Xlim (minx, maxx);
     top_hist.Ylim (miny, maxy);
-    bottom_hist.Xlim (1.0, 0);
+    //bottom_hist.Xlim (1.0, 0);
+    bottom_hist.Xlim (minx, maxx);
     bottom_hist.Ylim (miny, maxy);
 
     events = al_create_event_queue ();
@@ -187,6 +189,7 @@ int main (int argc, char **argv) {
     scatterplot.XTicks ();
     scatterplot.YTicks ();
     scatterplot.Box ();
+
     scatterplot.Update ();
 
     top_hist.Clear ();
@@ -201,11 +204,13 @@ int main (int argc, char **argv) {
     top_hist.Update ();
 
     bottom_hist.Clear ();
-    par = bottom_hist.Par ();
-    par.side = SIDE_RIGHT;
-    bottom_hist.Plot (data, par);
+    //par = bottom_hist.Par ();
+    //par.side = SIDE_RIGHT;
+    //bottom_hist.Plot (data, par);
+    bottom_hist.Plot (data);
     bottom_hist.XTicks ();
-    bottom_hist.XGrid ();
+    bottom_hist.YTicks ();
+    //bottom_hist.XGrid ();
     bottom_hist.Box ();
     bottom_hist.Update ();
 

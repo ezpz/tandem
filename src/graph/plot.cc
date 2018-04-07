@@ -5,7 +5,6 @@
 
 #include <graph/plot.h>
 #include <graph/util.h>
-#include <graph/exceptions.h>
 #include <dataset/summary.h>
 
 void BasicPlot::Initialize () {
@@ -584,4 +583,130 @@ void BoxPlot::Horizontal (const Dataset& data, const Parameters& par) {
     }
 }
 
+bool 
+HexBinPlot::AllValid (const std::vector< FloatType > &vs, RangeType which) {
+    std::vector< FloatType >::const_iterator VIT = vs.begin (), 
+        VEND = vs.end ();
+    Range rng = which == RANGE_X ? XRange () : YRange ();
+    for (; VIT != VEND; ++VIT) {
+        if (! rng.Contains (*VIT)) {
+            return false;
+        }
+    }
+    return true;
+}
 
+void HexBinPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
+void HexBinPlot::Plot (const Dataset& data, const Parameters& par) {
+
+    Range xrng = XRange (), yrng = YRange ();
+    FloatType dist = yrng.Distance ();
+    FloatType minx = xrng.Low (), maxx = xrng.High ();
+    FloatType miny = yrng.Low (), maxy = yrng.High ();
+    
+    /* TODO: for now, just use fixed number of bins */
+    FloatType nbins = 30.0;
+
+    FloatType hex = dist / nbins;
+    
+    FloatType xstep = 2 * sin (60.0 * M_PI / 180.0) * hex;
+    FloatType ystep = 1.5 * hex;
+    FloatType a = 0.5 * hex, b = sin (60.0 * M_PI / 180.0) * hex;
+    int z = 0;
+
+    FloatType width = 2 * b;
+    FloatType height = hex + a;
+
+    int nxbins = static_cast< int >(ceil (xrng.Distance () / width));
+    int nybins = static_cast< int >(ceil (yrng.Distance () / height));
+
+    std::vector< std::vector< int > > grid (nybins);
+    for (int i = 0; i < nybins; ++i) {
+        grid[i].resize (nxbins);
+    }
+
+    Dataset::const_iterator DIT = data.Begin (), DEND = data.End ();
+    int yidx = 0, xidx = 0, maxbin = 0;
+    for (; DIT != DEND; ++DIT) {
+        FloatType tx = transform (DIT->X (), par.xdomain, xrng);
+        FloatType ty = transform (DIT->Y (), par.ydomain, yrng);
+
+        /* Adjust for border offset surrounding viewport */
+        tx -= minx;
+        ty -= miny;
+
+        yidx = static_cast< int >(ty / height);
+        if (0 == yidx % 2) {
+            if (tx > b) {
+                xidx = static_cast< int >((tx - b) / width);
+            } else {
+                xidx = 0;
+            }
+        } else {
+            xidx = static_cast< int >(tx / width);
+        }
+
+        grid[yidx][xidx] += 1;
+        maxbin = std::max (maxbin, grid[yidx][xidx]);
+    }
+
+    ColorType cool = mkcol (0, 0, 255, 8);
+    ColorType hot = mkcol (0, 0, 255, 255);
+
+    xidx = yidx = 0;
+    for (FloatType y = miny + a; y < maxy; y += ystep, ++z, ++yidx) {
+
+        FloatType xoff = ((1 == z % 2) ? b : 0.0);
+        std::vector< FloatType > ys = { y, y + hex, y + hex + a, y - a };
+
+        if (! AllValid (ys, RANGE_Y)) { continue; }
+
+        xidx = 0;
+        for (FloatType x = minx + xoff; x < maxx - xstep; x += xstep, ++xidx) {
+
+            std::vector< FloatType > xs = { x, x + b, x + xstep };
+            int cnt = grid[yidx][xidx];
+
+            /* Only display bins that had any items */
+            if (cnt == 0) { continue; }
+
+            if (AllValid (xs, RANGE_X)) {
+
+                ALLEGRO_VERTEX v[7];
+                FloatType alpha = static_cast< FloatType >(cnt) / 
+                        static_cast< FloatType >(maxbin);
+                ColorType col = gradient (cool, hot, alpha);
+
+                memset (v, 0, sizeof (ALLEGRO_VERTEX) * 7);
+
+                v[0].x = static_cast< float >(x);
+                v[0].y = static_cast< float >(y);
+                v[0].color = col;
+                v[1].x = static_cast< float >(x);
+                v[1].y = static_cast< float >(y + hex);
+                v[1].color = col;
+                v[2].x = static_cast< float >(x + b);
+                v[2].y = static_cast< float >(y + hex + a);
+                v[2].color = col;
+                v[3].x = static_cast< float >(x + xstep);
+                v[3].y = static_cast< float >(y + hex);
+                v[3].color = col;
+                v[4].x = static_cast< float >(x + xstep);
+                v[4].y = static_cast< float >(y);
+                v[4].color = col;
+                v[5].x = static_cast< float >(x + b);
+                v[5].y = static_cast< float >(y - a);
+                v[5].color = col;
+                v[6].x = static_cast< float >(x);
+                v[6].y = static_cast< float >(y);
+                v[6].color = col;
+                al_draw_prim (v, NULL, NULL, 0, 7, ALLEGRO_PRIM_TRIANGLE_FAN);
+
+                for (int i = 0; i < 7; ++i) {
+                    v[i].color = par.col;
+                }
+                al_draw_prim (v, NULL, NULL, 0, 7, ALLEGRO_PRIM_LINE_LOOP);
+            }
+        }
+    }
+}
