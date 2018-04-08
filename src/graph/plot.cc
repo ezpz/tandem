@@ -710,3 +710,26 @@ void HexBinPlot::Plot (const Dataset& data, const Parameters& par) {
         }
     }
 }
+
+void LinePlot::Plot (const Dataset& data) { Plot (data, Par ()); }
+void LinePlot::Plot (const Dataset& data, const Parameters& par) {
+
+    if (data.Size () < 2) { 
+        throw NotEnoughData ("LinePlot needs at least two points");
+    }
+
+    std::vector< Line > lines;
+    Dataset::const_iterator DIT = data.Begin (), DEND = data.End ();
+    FloatType x1 = DIT->X (), y1 = DIT->Y ();
+    FloatType x2 = 0.0, y2 = 0.0;
+    ++DIT;
+    for (; DIT != DEND; ++DIT) {
+        x2 = DIT->X ();
+        y2 = DIT->Y ();
+        lines.push_back (Line (Point (x1, y1), Point (x2, y2)));
+        x1 = x2;
+        y1 = y2;
+    }
+    Lines (lines, par);
+}
+

@@ -35,7 +35,8 @@ enum button_state {
 #define PLOT_HIST_B    5
 #define PLOT_HIST_T    6
 #define PLOT_HEXBIN    7
-#define MAX_PLOT       8
+#define PLOT_LINE      8
+#define MAX_PLOT       9
 
 void change_plot (BasicPlot **plots, int *plot_type, 
         ALLEGRO_DISPLAY **screens, ALLEGRO_DISPLAY *source, Dataset& data,
@@ -156,6 +157,19 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Plot (data);
             plots[i]->YTicks ();
             plots[i]->XTicks ();
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_LINE:
+            plots[i] = new LinePlot (screens[i]);
+            plots[i]->Xlim (minx, maxx);
+            plots[i]->Ylim (miny, maxy);
+            plots[i]->Clear ();
+            plots[i]->Plot (data);
+            plots[i]->XTicks ();
+            plots[i]->YTicks ();
+            plots[i]->XGrid ();
+            plots[i]->YGrid ();
             plots[i]->Box ();
             plots[i]->Update ();
             break;

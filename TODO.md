@@ -27,7 +27,7 @@
 - [x] Handle negative axis ranges
 - [x] Read in dataset from command line (dynamically setting ranges)
 
-### Types of views in corner display
+### Types of views
 - [ ] Mean/Median with std dev circles around selected points
 - [ ] Correlation
 - [ ] Line plot (line-and-point plot)
@@ -35,6 +35,8 @@
 - [ ] heatmap (standard binning)
 - [ ] heatmap (various binning - ~~hexagon~~, circle, ...)
 - [ ] Histogram with color indicating quartiles
+- [ ] Radial plot
+- [x] Line plot 
 - [x] Hexagon plot
 - [x] Histogram (x-axis/y-axis option)
 - [x] boxplot

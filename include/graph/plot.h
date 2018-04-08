@@ -173,5 +173,19 @@ public:
 
 };
 
+class LinePlot : public BasicPlot {
+
+    LinePlot ();
+    LinePlot (const LinePlot&);
+
+public:
+
+    LinePlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
+
+    void Plot (const Dataset& data);
+    void Plot (const Dataset& data, const Parameters& par);
+
+};
+
 
 #endif /*PLOT_H__*/

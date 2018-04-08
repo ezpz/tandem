@@ -50,6 +50,15 @@ struct NotImplemented : public std::exception {
 
 };
 
+struct NotEnoughData : public std::exception {
+    std::string msg_;
+    NotEnoughData (const char *msg) {
+        msg_ = std::string(msg);
+    }
+    virtual ~NotEnoughData () throw () {}
+    virtual const char *what () const throw () { return msg_.c_str (); }
+};
+
 struct InvalidRange : public std::exception {
     std::string msg_;
     InvalidRange (const FloatType& x, const FloatType& y) : 
