@@ -11,6 +11,7 @@
 - [ ] Collect aspect ratio of screen when creating plots
 - [ ] Better tick mark placement algorithm
 - [ ] splines instead of just points
+- [ ] Compute absolute hexbinning instead of approximations
 - [ ] Handle single value data sets properly
 - [ ] Better categories in the TODO list (maybe with priorities)
 - [ ] Devise a way to determine 'unset' vs. 'user specified' parameters

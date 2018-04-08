@@ -650,8 +650,8 @@ void HexBinPlot::Plot (const Dataset& data, const Parameters& par) {
         maxbin = std::max (maxbin, grid[yidx][xidx]);
     }
 
-    ColorType cool = mkcol (0, 0, 255, 8);
-    ColorType hot = mkcol (0, 0, 255, 255);
+    ColorType cool = mkcol (255, 255, 255, 8);
+    ColorType hot = mkcol (255, 255, 255, 255);
 
     xidx = yidx = 0;
     for (FloatType y = miny + a; y < maxy; y += ystep, ++z, ++yidx) {
