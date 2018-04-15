@@ -5,6 +5,7 @@
 - [ ] Events processed using 0MQ
 - [ ] Plot titles (general annotations: xlabel, ylabel, etc.)
 - [ ] Move dataset/routines (median, mean, ...) to src/data, include/data
+- [ ] Address TODOs sprinkled throughout code
 - [ ] Top and left plots in unison
 - [ ] Separate adding points and displaying (plot functions)
 - [ ] Make cindent normalization script
