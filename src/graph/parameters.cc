@@ -32,7 +32,7 @@ void Parameters::Reset () {
     oma.bottom = 3.0;
     oma.left = 5.0;
     oma.top = 7.0;
-    oma.right = 2.0;
+    oma.right = 4.0;
 
     side = SIDE_BOTTOM;
 

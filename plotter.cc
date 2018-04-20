@@ -120,10 +120,11 @@ void change_plot (BasicPlot **plots, int *plot_type,
             par.side = SIDE_RIGHT;
             plots[i]->Plot (data, par);
             plots[i]->XTicks ();
+            plots[i]->YTicks (par);
             plots[i]->Box ();
             plots[i]->Update ();
             break;
-        case PLOT_HIST_B:
+        case PLOT_HIST_T:
             plots[i] = new HistogramPlot (screens[i]);
             plots[i]->Xlim (minx, maxx);
             plots[i]->Ylim (1.0, 0.0);
@@ -133,10 +134,12 @@ void change_plot (BasicPlot **plots, int *plot_type,
             par.side = SIDE_TOP;
             plots[i]->Plot (data, par);
             plots[i]->YTicks ();
+            par.side = SIDE_TOP;
+            plots[i]->XTicks (par);
             plots[i]->Box ();
             plots[i]->Update ();
             break;
-        case PLOT_HIST_T:
+        case PLOT_HIST_B:
             plots[i] = new HistogramPlot (screens[i]);
             plots[i]->Xlim (minx, maxx);
             plots[i]->Ylim (0, 1.0);
@@ -146,6 +149,7 @@ void change_plot (BasicPlot **plots, int *plot_type,
             par.side = SIDE_BOTTOM;
             plots[i]->Plot (data, par);
             plots[i]->YTicks ();
+            plots[i]->XTicks ();
             plots[i]->Box ();
             plots[i]->Update ();
             break;

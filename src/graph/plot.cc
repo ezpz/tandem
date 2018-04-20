@@ -136,7 +136,11 @@ void BasicPlot::Ylim (FloatType ymin, FloatType ymax) {
     par_.SetYDomain (ymin, ymax);
 }
 
-void BasicPlot::XTicks () const { XTicks (Par ()); }
+void BasicPlot::XTicks () const { 
+    Parameters par = Par ();
+    par.side = SIDE_BOTTOM;
+    XTicks (par); 
+}
 void BasicPlot::XTicks (const Parameters& par) const {
 
     const Range& xdomain = par.xdomain;
@@ -145,11 +149,18 @@ void BasicPlot::XTicks (const Parameters& par) const {
     FloatType xstride = xdomain.Distance () / par.xticks;
     FloatType a = xdomain.X ();
     FloatType b = xdomain.Y ();
-    FloatType ymin = ydomain.Low ();
+    FloatType y = 0.0;
     FloatType off = par.font_px;
     ColorType col = mkcol (255, 255, 255, 255);
 
     if (a > b) { std::swap (a, b); }
+
+    if (SIDE_TOP == par.side) {
+        y = ydomain.Y ();
+        off = -off;
+    } else {
+        y = ydomain.X ();
+    }
 
     GrabFocus ();
 
@@ -163,13 +174,17 @@ void BasicPlot::XTicks (const Parameters& par) const {
 
         al_draw_textf (par.font, col, 
                 transform (x, xdomain, XRange ()), 
-                transform (ymin, ydomain, YRange ()) + off, 
+                transform (y, ydomain, YRange ()) + off, 
                 ALIGN_CENTER, 
                 "%s", txt);
     }
 }
 
-void BasicPlot::YTicks () const { YTicks (Par ()); }
+void BasicPlot::YTicks () const { 
+    Parameters par = Par ();
+    par.side = SIDE_LEFT;
+    YTicks (par); 
+}
 void BasicPlot::YTicks (const Parameters& par) const {
 
     const Range &ydomain = par.ydomain;
@@ -177,13 +192,22 @@ void BasicPlot::YTicks (const Parameters& par) const {
 
     FloatType ystride = ydomain.Distance () / par.yticks;
     FloatType ymax = ydomain.High ();
-    FloatType xmin = xdomain.Low ();
+    FloatType x = 0.0;
     FloatType ymin = ydomain.Low ();
     FloatType xoff = par.font_px;
     FloatType yoff = par.font_px * 0.5;
     ColorType col = mkcol (255, 255, 255, 255);
+    int align = ALIGN_RIGHT;
 
     GrabFocus ();
+
+    if (SIDE_RIGHT == par.side) {
+        x = xdomain.Y ();
+        xoff = -xoff;
+        align = ALIGN_LEFT;
+    } else {
+        x = xdomain.X ();
+    }
 
     for (FloatType y = ymin + ystride; y < ymax; y += ystride) {
         char txt[16] = {0};
@@ -194,9 +218,9 @@ void BasicPlot::YTicks (const Parameters& par) const {
         }
 
         al_draw_textf (par.font, col, 
-                transform (xmin, xdomain, XRange ()) - xoff, 
+                transform (x, xdomain, XRange ()) - xoff, 
                 transform (y, ydomain, YRange ()) - yoff, 
-                ALIGN_RIGHT, 
+                align, 
                 "%s", txt);
     }
 }
