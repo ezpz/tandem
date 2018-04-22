@@ -93,6 +93,15 @@ public:
     void YTicks () const;
     void YTicks (const Parameters& par) const;
 
+    void XLabel (const std::string& label) const;
+    void XLabel (const std::string& label, const Parameters& par) const;
+
+    void YLabel (const std::string& label) const;
+    void YLabel (const std::string& label, const Parameters& par) const;
+
+    void Title (const std::string& label) const;
+    void Title (const std::string& label, const Parameters& par) const;
+
     void Lines (const std::vector< Line >& lines) const;
     void Lines (const std::vector< Line >& lines, const Parameters& par) const;
 

@@ -14,7 +14,7 @@ void BasicPlot::Initialize () {
               off_bottom = par_.oma.bottom * par_.font_px;
 
     view_.SetXRange (0.0 + off_left, DisplayWidth () - off_right);
-    view_.SetYRange (DisplayHeight () - off_top, 0.0 + off_bottom);
+    view_.SetYRange (DisplayHeight () - off_bottom, 0.0 + off_top);
 }
 
 void BasicPlot::GrabFocus () const {
@@ -151,13 +151,12 @@ void BasicPlot::XTicks (const Parameters& par) const {
     FloatType b = xdomain.Y ();
     FloatType y = 0.0;
     FloatType off = par.font_px;
-    ColorType col = mkcol (255, 255, 255, 255);
 
     if (a > b) { std::swap (a, b); }
 
     if (SIDE_TOP == par.side) {
         y = ydomain.Y ();
-        off = -off;
+        off = -1.5 * off;
     } else {
         y = ydomain.X ();
     }
@@ -172,7 +171,7 @@ void BasicPlot::XTicks (const Parameters& par) const {
             snprintf (txt, 16, "%ld", static_cast< long >(floor (x)));
         }
 
-        al_draw_textf (par.font, col, 
+        al_draw_textf (par.font, par.font_col, 
                 transform (x, xdomain, XRange ()), 
                 transform (y, ydomain, YRange ()) + off, 
                 ALIGN_CENTER, 
@@ -196,7 +195,6 @@ void BasicPlot::YTicks (const Parameters& par) const {
     FloatType ymin = ydomain.Low ();
     FloatType xoff = par.font_px;
     FloatType yoff = par.font_px * 0.5;
-    ColorType col = mkcol (255, 255, 255, 255);
     int align = ALIGN_RIGHT;
 
     GrabFocus ();
@@ -217,11 +215,79 @@ void BasicPlot::YTicks (const Parameters& par) const {
             snprintf (txt, 16, "%ld", static_cast< long >(floor (y)));
         }
 
-        al_draw_textf (par.font, col, 
+        al_draw_textf (par.font, par.font_col, 
                 transform (x, xdomain, XRange ()) - xoff, 
                 transform (y, ydomain, YRange ()) - yoff, 
                 align, 
                 "%s", txt);
+    }
+}
+
+void BasicPlot::XLabel (const std::string& label) const {
+    Parameters par = Par ();
+    par.side = SIDE_BOTTOM;
+    XLabel (label, par);
+}
+void BasicPlot::XLabel (const std::string& label, const Parameters& par) const {
+    const Range &xd = par.xdomain;
+    FloatType x = transform (
+                    xd.Low () + (xd.Distance () / 2.0),
+                    xd, XRange ());
+    FloatType y = 0.0;
+
+    if (SIDE_TOP == par.side) {
+        y = 1.5 * par.font_px;
+    } else {
+        y = DisplayHeight () - (1.5 * par.font_px);
+    }
+    al_draw_textf (par.font, par.font_col, 
+            x, y, ALIGN_CENTER, "%s", label.c_str ());
+}
+
+void BasicPlot::YLabel (const std::string& label) const {
+    Parameters par = Par ();
+    par.side = SIDE_LEFT;
+    YLabel (label, par);
+}
+void BasicPlot::YLabel (const std::string& label, const Parameters& par) const {
+    ALLEGRO_TRANSFORM t;
+    const Range &yd = par.ydomain;
+    FloatType x = 0.0;
+    FloatType y = transform (
+                    yd.Low () + (yd.Distance () / 2.0),
+                    yd, YRange ());
+
+    if (SIDE_RIGHT == par.side) {
+        x = DisplayWidth () - (1.5 * par.font_px);
+    } else {
+        x = 1.5 * par.font_px;
+    }
+
+    al_identity_transform (&t);
+    al_translate_transform (&t, -x, -y);
+    al_rotate_transform (&t, -M_PI / 2.0);
+    al_translate_transform (&t, x, y);
+    al_use_transform (&t);
+    al_draw_textf (par.font, par.font_col, 
+            x, y, ALIGN_CENTER, "%s", label.c_str ());
+    al_identity_transform (&t);
+    al_use_transform (&t);
+}
+
+void BasicPlot::Title (const std::string& text) const { Title (text, Par ()); }
+void BasicPlot::Title (const std::string& text, const Parameters& par) const { 
+    const Range &xd = par.xdomain;
+    FloatType x = transform (
+                    xd.Low () + (xd.Distance () / 2.0),
+                    xd, XRange ());
+    FloatType y = 1.5 * par.font_px;
+    std::vector< std::string > lines = breakLines (text);
+    std::vector< std::string >::const_iterator LIT = lines.begin (),
+        LEND = lines.end ();
+    for (; LIT != LEND; ++LIT) {
+        al_draw_textf (par.font, par.font_col, 
+                x, y, ALIGN_CENTER, "%s", LIT->c_str ());
+        y += par.font_px;
     }
 }
 
@@ -231,11 +297,9 @@ void BasicPlot::Text (const Point& at, const std::string& text) const {
 void BasicPlot::Text (const Point& at, const std::string& text, 
         const Parameters& par) const { 
 
-    ColorType col = mkcol (255, 255, 255, 255);
-
     GrabFocus ();
 
-    al_draw_textf (par.font, col, 
+    al_draw_textf (par.font, par.font_col, 
             transform (at.X (), par.xdomain, XRange ()), 
             transform (at.Y (), par.ydomain, YRange ()), 
             ALIGN_LEFT, 

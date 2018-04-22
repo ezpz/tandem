@@ -24,6 +24,7 @@ struct Margin {
 struct Parameters {
 
     ColorType           col;        /* default point/line color */
+    ColorType           font_col;   /* default text color */
     ColorType           fill;       /* default fill color */
     ColorType           sfill;      /* fill color for selection */
     FloatType           lwd;        /* line width */

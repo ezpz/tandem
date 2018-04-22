@@ -40,7 +40,8 @@ enum button_state {
 
 void change_plot (BasicPlot **plots, int *plot_type, 
         ALLEGRO_DISPLAY **screens, ALLEGRO_DISPLAY *source, Dataset& data,
-        FloatType minx, FloatType maxx, FloatType miny, FloatType maxy) {
+        FloatType minx, FloatType maxx, FloatType miny, FloatType maxy,
+        int dir) {
     int i = -1;
     if (source == screens[0]) { i = 0; }
     else if (source == screens[1]) { i = 1; }
@@ -52,7 +53,19 @@ void change_plot (BasicPlot **plots, int *plot_type,
 
     Parameters par;
     int old_type = plot_type[i];
-    int new_type = (old_type + 1) % MAX_PLOT;
+    int new_type = old_type;
+    if (0 == dir) { return; }
+    if (dir < 0) {
+        if (0 == old_type) {
+            new_type = MAX_PLOT - 1;
+        } else {
+            new_type = (old_type - 1) % MAX_PLOT;
+        }
+    } else {
+        new_type = (old_type + 1) % MAX_PLOT;
+    }
+    if (old_type == new_type) { return; }
+
     plot_type[i] = new_type;
 
     delete plots[i];
@@ -67,6 +80,8 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Plot (data);
             plots[i]->XTicks ();
             plots[i]->YTicks ();
+            plots[i]->XLabel ("ScatterPlot X Data");
+            plots[i]->YLabel ("Y Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -75,12 +90,14 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Xlim (minx, maxx);
             plots[i]->Ylim (miny, maxy);
             plots[i]->Clear ();
+            plots[i]->Title ("Boxplot H Title\nA second line");
             plots[i]->XGrid ();
             par = plots[i]->Par ();
             par.side = HORIZONTAL;
             plots[i]->Plot (data, par);
             plots[i]->XTicks ();
-            //plots[i]->YTicks ();
+            plots[i]->XLabel ("BoxPlot (H) X Data");
+            plots[i]->YLabel ("Y Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -94,6 +111,8 @@ void change_plot (BasicPlot **plots, int *plot_type,
             par.side = VERTICAL;
             plots[i]->Plot (data, par);
             plots[i]->YTicks ();
+            plots[i]->XLabel ("BoxPlot (V) X Data");
+            plots[i]->YLabel ("Y Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -107,6 +126,8 @@ void change_plot (BasicPlot **plots, int *plot_type,
             par.side = SIDE_LEFT;
             plots[i]->Plot (data, par);
             plots[i]->XTicks ();
+            plots[i]->XLabel ("Hist (L) X Data");
+            plots[i]->YLabel ("Y Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -120,6 +141,7 @@ void change_plot (BasicPlot **plots, int *plot_type,
             par.side = SIDE_RIGHT;
             plots[i]->Plot (data, par);
             plots[i]->XTicks ();
+            plots[i]->XLabel ("Hist (R) X Data");
             plots[i]->YTicks (par);
             plots[i]->Box ();
             plots[i]->Update ();
@@ -136,6 +158,7 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->YTicks ();
             par.side = SIDE_TOP;
             plots[i]->XTicks (par);
+            plots[i]->XLabel ("Hist (T) X Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -150,6 +173,7 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Plot (data, par);
             plots[i]->YTicks ();
             plots[i]->XTicks ();
+            plots[i]->XLabel ("Hist (B) X Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -161,6 +185,7 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Plot (data);
             plots[i]->YTicks ();
             plots[i]->XTicks ();
+            plots[i]->XLabel ("Hexbin X Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -174,6 +199,7 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Plot (data);
             plots[i]->XTicks ();
             plots[i]->YTicks ();
+            plots[i]->XLabel ("LinePlot X Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
@@ -217,6 +243,7 @@ int main (int argc, char **argv) {
     ALLEGRO_EVENT_QUEUE *events = NULL;
     ALLEGRO_DISPLAY *screens[3] = { NULL };
 
+    bool shifted = false;
     int adapter_count = 0;
     int monitor_x = 0, monitor_y = 0, screen_x = 0, screen_y = 0;
     FloatType minx = 0, miny = 0, maxx = 0, maxy = 0;
@@ -418,14 +445,24 @@ next_event:
                 }
                 */
                 break;
+            case ALLEGRO_EVENT_KEY_UP:
+                if (shifted && 
+                        (ALLEGRO_KEY_LSHIFT == event.keyboard.keycode || 
+                        ALLEGRO_KEY_LSHIFT == event.keyboard.keycode)) {
+                    shifted = false;
+                }
+                break;
             case ALLEGRO_EVENT_KEY_DOWN:
                 if (ALLEGRO_KEY_ESCAPE == event.keyboard.keycode) {
                     goto outly;
-                }
-                if (ALLEGRO_KEY_N == event.keyboard.keycode) {
+                } else if (ALLEGRO_KEY_LSHIFT == event.keyboard.keycode) {
+                    shifted = true;
+                } else if (ALLEGRO_KEY_RSHIFT == event.keyboard.keycode) {
+                    shifted = true;
+                } else if (ALLEGRO_KEY_N == event.keyboard.keycode) {
                     change_plot (plots, plot_type, screens, 
                             event.keyboard.display, 
-                            data, minx, maxx, miny, maxy);
+                            data, minx, maxx, miny, maxy, shifted ? -1 : 1);
                 }
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:

@@ -29,6 +29,23 @@ ColorType gradient (ColorType c1, ColorType c2, FloatType amnt) {
     return c;
 }
 
+std::vector< std::string > breakLines (const std::string& str) {
+    std::vector< std::string > lines;
+    std::string::size_type pos = str.find ("\n");
+    if (std::string::npos == pos) { 
+        lines.push_back (str);
+        return lines;
+    } else {
+        lines.push_back (str.substr (0, pos));
+    }
+    while (std::string::npos != pos) {
+        std::string::size_type end = str.find ("\n", pos + 1);
+        lines.push_back (str.substr (pos + 1, end));            
+        pos = end;
+    }
+    return lines;
+}
+
 const char * orientation2str (Orientation o) {
     switch (o) {
         case SIDE_BOTTOM: return "SIDE_BOTTOM";

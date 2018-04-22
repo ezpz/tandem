@@ -3,10 +3,8 @@
 - [ ] Locking mechanisms for multiple threads grabbing the shared display
 - [ ] Rectangular selection highlights points
 - [ ] Events processed using 0MQ
-- [ ] Plot titles (general annotations: xlabel, ylabel, etc.)
 - [ ] Move dataset/routines (median, mean, ...) to src/data, include/data
 - [ ] Address TODOs sprinkled throughout code
-- [ ] Top and left plots in unison
 - [ ] Separate adding points and displaying (plot functions)
 - [ ] Make cindent normalization script
 - [ ] Collect aspect ratio of screen when creating plots
@@ -16,6 +14,8 @@
 - [ ] Handle single value data sets properly
 - [ ] Better categories in the TODO list (maybe with priorities)
 - [ ] Devise a way to determine 'unset' vs. 'user specified' parameters
+- [ ] Label fonts need to be bigger than plot font (dynamically load per cex?)
+- [x] Plot titles (general annotations: xlabel, ylabel, etc.)
 - [x] Multiple views supported in corner plot (switch via command/meta-key)
 - [x] Better edge cases (e.g. plot with single point)
 - [x] How to handle axes on hostogram plots
