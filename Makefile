@@ -17,15 +17,15 @@ OBJS = $(patsubst %.cc,%.o,$(SRCS))
 refs:
 	cscope -b -R 
 
-plot: plotter.cc $(OBJS)
+tandem: tandem.cc $(OBJS)
 	g++ $(FLAGS) $(INC) $^ $(LIBS) -o $@
 
 $(OBJS): %.o: %.cc
 	g++ $(FLAGS) $(INC) $^ $(LIBS) -c -o $@ 
 
-all: plot refs
+all: tandem refs
 
 clean:
 	rm -f $(OBJS)
-	rm -f plot
+	rm -f tandem
 	rm -f cscope.out
