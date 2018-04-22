@@ -185,7 +185,9 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->Plot (data);
             plots[i]->YTicks ();
             plots[i]->XTicks ();
-            plots[i]->XLabel ("Hexbin X Data");
+            plots[i]->XLabel ("X Data");
+            plots[i]->YLabel ("Y Data");
+            plots[i]->Title ("Example Hexbin Data\nMultiple Modes");
             plots[i]->Box ();
             plots[i]->Update ();
             break;
