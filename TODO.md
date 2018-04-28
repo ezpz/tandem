@@ -32,11 +32,11 @@
 - [ ] Mean/Median with std dev circles around selected points
 - [ ] Correlation
 - [ ] Line plot (line-and-point plot)
-- [ ] cumulative distribution plot
 - [ ] heatmap (standard binning)
 - [ ] heatmap (various binning - ~~hexagon~~, circle, ...)
 - [ ] Histogram with color indicating quartiles
 - [ ] Radial plot
+- [x] Empirical cumulative distribution plot
 - [x] Line plot 
 - [x] Hexagon plot
 - [x] Histogram (x-axis/y-axis option)

@@ -306,10 +306,90 @@ void BasicPlot::Text (const Point& at, const std::string& text,
             "%s", text.c_str ());
 }
 
+void ECDFPlot::Plot (const Dataset& data) { 
+    Parameters par(Par ());
+    par.side = HORIZONTAL;
+    Plot (data, par);
+}
+void ECDFPlot::Plot (const Dataset& data, const Parameters& par) {
+    if (HORIZONTAL == par.side) {
+        ECDFHorizontal (data, par);
+    } else {
+        ECDFVertical (data, par);
+    }
+}
+
+void ECDFPlot::ECDFHorizontal (const Dataset& data, const Parameters& par) {
+    Dataset::size_type n = data.Size (), i = 1;
+    std::vector< FloatType > samples; 
+
+    GrabFocus ();
+
+    Parameters mod(Par ());
+    mod.SetYDomain (-0.1, 1.10);
+    mod.SetXDomain (data.YDomain ().Low (), data.YDomain ().High ());
+    data.YData (samples);
+    Par(mod);
+
+    /* Draw the boundary lines @ 0.0 and 1.0 */
+    FloatType x1 = data.YDomain ().Low (), x2 = data.YDomain ().High ();
+    FloatType y1 = 1.0, y2 = 0.0;
+    x1 = transform (x1, mod.xdomain, XRange ());
+    x2 = transform (x2, mod.xdomain, XRange ());
+    y1 = transform (y1, mod.ydomain, YRange ());
+    y2 = transform (y2, mod.ydomain, YRange ());
+    al_draw_line (x1, y1, x2, y1, par.col, 1.0);
+    al_draw_line (x1, y2, x2, y2, par.col, 1.0);
+
+    std::sort (samples.begin (), samples.end ());
+    std::vector< FloatType >::const_iterator SIT = samples.begin (),
+        SEND = samples.end ();
+    for (; SIT != SEND; ++SIT, ++i) {
+        FloatType y = static_cast< FloatType >(i) / static_cast< FloatType >(n);
+        FloatType x = *SIT;
+        FloatType ty = transform (y, mod.ydomain, YRange ());
+        FloatType tx = transform (x, mod.xdomain, XRange ());
+        al_draw_circle (tx, ty, 2, par.col, par.lwd);
+    }
+}
+
+void ECDFPlot::ECDFVertical (const Dataset& data, const Parameters& par) {
+    Dataset::size_type n = data.Size (), i = 1;
+    std::vector< FloatType > samples; 
+
+    GrabFocus ();
+
+    Parameters mod(Par ());
+    mod.SetXDomain (-0.1, 1.10);
+    mod.SetYDomain (data.XDomain ().Low (), data.XDomain ().High ());
+    data.XData (samples);
+    Par(mod);
+
+    /* Draw the boundary lines @ 0.0 and 1.0 */
+    FloatType y1 = data.XDomain ().Low (), y2 = data.XDomain ().High ();
+    FloatType x1 = 1.0, x2 = 0.0;
+    x1 = transform (x1, mod.xdomain, XRange ());
+    x2 = transform (x2, mod.xdomain, XRange ());
+    y1 = transform (y1, mod.ydomain, YRange ());
+    y2 = transform (y2, mod.ydomain, YRange ());
+    al_draw_line (x1, y1, x1, y2, par.col, 1.0);
+    al_draw_line (x2, y1, x2, y2, par.col, 1.0);
+
+    std::sort (samples.begin (), samples.end ());
+    std::vector< FloatType >::const_iterator SIT = samples.begin (),
+        SEND = samples.end ();
+    for (; SIT != SEND; ++SIT, ++i) {
+        FloatType x = static_cast< FloatType >(i) / static_cast< FloatType >(n);
+        FloatType y = *SIT;
+        FloatType ty = transform (y, mod.ydomain, YRange ());
+        FloatType tx = transform (x, mod.xdomain, XRange ());
+        al_draw_circle (tx, ty, 2, par.col, par.lwd);
+    }
+}
+
 void ScatterPlot::Plot (const Dataset& data) { Plot (data, Par ()); }
 void ScatterPlot::Plot (const Dataset& data, const Parameters& par) {
-    Dataset::const_iterator DIT = data.Begin (),
-        DEND = data.End ();
+    Dataset::const_iterator DIT = data.Begin (), DEND = data.End ();
 
     GrabFocus ();
 

@@ -36,7 +36,9 @@ enum button_state {
 #define PLOT_HIST_T    6
 #define PLOT_HEXBIN    7
 #define PLOT_LINE      8
-#define MAX_PLOT       9
+#define PLOT_ECDF_H    9
+#define PLOT_ECDF_V    10
+#define MAX_PLOT       11
 
 void change_plot (BasicPlot **plots, int *plot_type, 
         ALLEGRO_DISPLAY **screens, ALLEGRO_DISPLAY *source, Dataset& data,
@@ -202,6 +204,27 @@ void change_plot (BasicPlot **plots, int *plot_type,
             plots[i]->XTicks ();
             plots[i]->YTicks ();
             plots[i]->XLabel ("LinePlot X Data");
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_ECDF_H:
+            plots[i] = new ECDFPlot (screens[i]);
+            plots[i]->Clear ();
+            plots[i]->Plot (data);
+            plots[i]->YTicks ();
+            plots[i]->XTicks ();
+            plots[i]->XLabel ("ECDF Y Data");
+            plots[i]->Box ();
+            plots[i]->Update ();
+            break;
+        case PLOT_ECDF_V:
+            plots[i] = new ECDFPlot (screens[i]);
+            plots[i]->Clear ();
+            par.side = VERTICAL;
+            plots[i]->Plot (data, par);
+            plots[i]->YTicks ();
+            plots[i]->XTicks ();
+            plots[i]->YLabel ("ECDF X Data");
             plots[i]->Box ();
             plots[i]->Update ();
             break;

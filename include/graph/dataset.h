@@ -41,6 +41,7 @@ public:
         ydomain_.Reset (ymin, ymax);
     }
 
+    /* TODO: Provide const read-only version */
     void XData (std::vector< FloatType >& dest) const;
     void YData (std::vector< FloatType >& dest) const;
 

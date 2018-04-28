@@ -114,6 +114,24 @@ public:
 };
 
 
+class ECDFPlot : public BasicPlot {
+
+    ECDFPlot ();
+    ECDFPlot (const ECDFPlot&);
+
+    void ECDFHorizontal (const Dataset& data, const Parameters& par);
+    void ECDFVertical (const Dataset& data, const Parameters& par);
+
+public:
+
+    ECDFPlot (ALLEGRO_DISPLAY *win) : BasicPlot(win) {}
+
+    void Plot (const Dataset& data);
+    void Plot (const Dataset& data, const Parameters& par);
+
+};
+
+
 class ScatterPlot : public BasicPlot {
 
     ScatterPlot ();
